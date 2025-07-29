@@ -1,7 +1,6 @@
-// src/App.jsx - Updated with ThemeProvider
+// src/App.jsx - Fixed with proper imports and structure
 import React from 'react';
-import ErrorBoundary from './components/ErrorBoundary';
-import ThemeProvider from './components/ThemeProvider';
+import { ErrorBoundary, ThemeProvider } from './components';
 import DevPromptApp from './DevPromptApp';
 
 function App() {

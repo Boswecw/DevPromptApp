@@ -1,4 +1,4 @@
-// src/DevPromptApp.jsx - Updated to use theme context
+// src/DevPromptApp.jsx - Fixed imports and structure
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Copy, 
@@ -20,8 +20,8 @@ import {
   Keyboard
 } from 'lucide-react';
 
-import { HelpModal } from './components';
-import ThemeToggle from './components/ThemeToggle';
+// Fixed imports - use from components index
+import { HelpModal, ThemeToggle } from './components';
 
 // Programming languages configuration
 const PROGRAMMING_LANGUAGES = [
@@ -59,9 +59,9 @@ const CATEGORIES = [
 
 // Difficulty levels
 const DIFFICULTY_LEVELS = [
-  { id: 'beginner', name: 'Beginner', color: 'bg-green-100 text-green-800' },
-  { id: 'intermediate', name: 'Intermediate', color: 'bg-yellow-100 text-yellow-800' },
-  { id: 'advanced', name: 'Advanced', color: 'bg-red-100 text-red-800' }
+  { id: 'beginner', name: 'Beginner', color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' },
+  { id: 'intermediate', name: 'Intermediate', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' },
+  { id: 'advanced', name: 'Advanced', color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' }
 ];
 
 // Feature tags
@@ -85,17 +85,21 @@ const DevPromptApp = () => {
   const [notification, setNotification] = useState(null);
   const [savedPrompts, setSavedPrompts] = useState([]);
 
-  // Load saved prompts
+  // Load saved prompts with error handling
   useEffect(() => {
     try {
       const saved = localStorage.getItem('saved-prompts');
-      if (saved) setSavedPrompts(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setSavedPrompts(Array.isArray(parsed) ? parsed : []);
+      }
     } catch (error) {
       console.warn('Failed to load saved prompts:', error);
+      setSavedPrompts([]);
     }
   }, []);
 
-  // Save prompts to localStorage
+  // Save prompts to localStorage with error handling
   useEffect(() => {
     try {
       localStorage.setItem('saved-prompts', JSON.stringify(savedPrompts));
@@ -115,6 +119,10 @@ const DevPromptApp = () => {
     const language = PROGRAMMING_LANGUAGES.find(l => l.id === selectedLanguage);
     const category = CATEGORIES.find(c => c.id === selectedCategory);
     const difficulty = DIFFICULTY_LEVELS.find(d => d.id === selectedDifficulty);
+
+    if (!language || !category || !difficulty) {
+      return 'Please select language, category, and difficulty level.';
+    }
 
     const basePrompts = {
       chatgpt: {
@@ -241,12 +249,14 @@ Deliver:
     return basePrompt;
   }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTags, customRequirements]);
 
-  // Copy to clipboard
+  // Copy to clipboard with better error handling
   const copyToClipboard = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(generatedPrompt);
-      showNotification(`Copied ${AI_MODELS.find(model => model.id === selectedModel)?.name} prompt to clipboard!`);
-    } catch {
+      const modelName = AI_MODELS.find(model => model.id === selectedModel)?.name || 'AI';
+      showNotification(`Copied ${modelName} prompt to clipboard!`);
+    } catch (error) {
+      console.warn('Clipboard API failed:', error);
       showNotification('Failed to copy to clipboard', 'error');
     }
   }, [generatedPrompt, selectedModel, showNotification]);
@@ -259,7 +269,7 @@ Deliver:
       language: selectedLanguage,
       category: selectedCategory,
       difficulty: selectedDifficulty,
-      tags: selectedTags,
+      tags: [...selectedTags],
       customRequirements,
       prompt: generatedPrompt,
       createdAt: new Date().toISOString()
@@ -272,21 +282,29 @@ Deliver:
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === 'c' && !e.target.matches('input, textarea')) {
+      // Don't trigger shortcuts if user is typing in input/textarea
+      if (e.target.matches('input, textarea, [contenteditable]')) {
+        return;
+      }
+
+      if (e.ctrlKey && e.key === 'c') {
         e.preventDefault();
         copyToClipboard();
       } else if (e.ctrlKey && e.key === 's') {
         e.preventDefault();
         savePrompt();
-      } else if (e.key === '?' && !e.target.matches('input, textarea')) {
+      } else if (e.key === '?' || (e.shiftKey && e.key === '/')) {
         e.preventDefault();
         setShowHelp(true);
+      } else if (e.key === 'Escape' && showHelp) {
+        e.preventDefault();
+        setShowHelp(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [copyToClipboard, savePrompt]);
+  }, [copyToClipboard, savePrompt, showHelp]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
@@ -404,7 +422,7 @@ Deliver:
                   <select
                     value={selectedDifficulty}
                     onChange={(e) => setSelectedDifficulty(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {DIFFICULTY_LEVELS.map(level => (
                       <option key={level.id} value={level.id}>
@@ -507,7 +525,7 @@ Deliver:
                           setSelectedTags(prev => prev.filter(t => t !== tag));
                         }
                       }}
-                      className="rounded border-gray-300 dark:border-gray-600"
+                      className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">{tag}</span>
                   </label>
@@ -541,7 +559,17 @@ Deliver:
                   {savedPrompts.slice(0, 5).map(prompt => (
                     <div
                       key={prompt.id}
-                      className="p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm"
+                      className="p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      onClick={() => {
+                        setSelectedModel(prompt.model);
+                        setSelectedLanguage(prompt.language);
+                        setSelectedCategory(prompt.category);
+                        setSelectedDifficulty(prompt.difficulty);
+                        setSelectedTags(prompt.tags);
+                        setCustomRequirements(prompt.customRequirements);
+                        showNotification('Prompt loaded!');
+                      }}
+                      title="Click to load this prompt"
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 px-2 py-0.5 rounded">
@@ -566,7 +594,7 @@ Deliver:
       {/* Notification */}
       {notification && (
         <div className="fixed bottom-4 right-4 z-50">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-fade-in ${
             notification.type === 'error' 
               ? 'bg-red-600 text-white' 
               : 'bg-green-600 text-white'

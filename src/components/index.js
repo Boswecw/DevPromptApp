@@ -1,6 +1,4 @@
-// src/components/index.js
-// ✅ Updated with ThemeProvider and ThemeToggle exports
-
+// src/components/index.js - Fixed exports
 // Error handling components
 export { default as ErrorBoundary } from './ErrorBoundary';
 
@@ -25,3 +23,10 @@ export {
   TableRowSkeleton,
   ListItemSkeleton
 } from './SkeletonComponents';
+
+// Storage error handler
+export { default as StorageErrorHandler } from './StorageErrorHandler';
+
+// Export hooks and contexts from their proper locations
+export { useThemeContext } from '../hooks/useThemeContext';
+export { ThemeContext } from '../contexts/ThemeContext';

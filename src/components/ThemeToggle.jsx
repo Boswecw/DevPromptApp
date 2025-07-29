@@ -1,7 +1,7 @@
-// src/components/ThemeToggle.jsx - Updated to use theme context
+// src/components/ThemeToggle.jsx
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
-import { useThemeContext } from '../hooks/useTheme';
+import { useThemeContext } from '../hooks/useThemeContext';
 
 const ThemeToggle = ({ className = '' }) => {
   const { isDarkMode, toggleTheme } = useThemeContext();
