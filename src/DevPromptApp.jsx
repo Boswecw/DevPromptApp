@@ -1,4 +1,4 @@
-// src/DevPromptApp.jsx - Completely Refactored
+// src/DevPromptApp.jsx - Updated to use theme context
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Copy, 
@@ -11,8 +11,6 @@ import {
   Palette,
   Layers,
   Zap,
-  Sun,
-  Moon,
   Check,
   X,
   Eye,
@@ -23,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { HelpModal } from './components';
+import ThemeToggle from './components/ThemeToggle';
 
 // Programming languages configuration
 const PROGRAMMING_LANGUAGES = [
@@ -72,16 +71,6 @@ const FEATURE_TAGS = [
 ];
 
 const DevPromptApp = () => {
-  // Theme state with proper initialization
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved === 'dark';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
-
   // Prompt builder state
   const [selectedModel, setSelectedModel] = useState('chatgpt');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
@@ -95,17 +84,6 @@ const DevPromptApp = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [notification, setNotification] = useState(null);
   const [savedPrompts, setSavedPrompts] = useState([]);
-
-  // Apply dark mode properly
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
 
   // Load saved prompts
   useEffect(() => {
@@ -125,11 +103,6 @@ const DevPromptApp = () => {
       console.warn('Failed to save prompts:', error);
     }
   }, [savedPrompts]);
-
-  // Toggle dark mode
-  const toggleDarkMode = useCallback(() => {
-    setIsDarkMode(prev => !prev);
-  }, []);
 
   // Show notification
   const showNotification = useCallback((message, type = 'success') => {
@@ -339,13 +312,7 @@ Deliver:
               <Keyboard className="w-5 h-5" />
             </button>
             
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              title="Toggle theme"
-            >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+            <ThemeToggle />
           </div>
         </div>
       </header>
