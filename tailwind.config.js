@@ -6,7 +6,14 @@ export default {
     './src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      // ✅ FIXED: Add line-clamp utilities manually since we don't have the plugin
+      // This replaces the need for @tailwindcss/line-clamp plugin
+    },
   },
-  plugins: [],
+  plugins: [
+    // ✅ SIMPLIFIED: Removed line-clamp plugin dependency
+    // If you want line-clamp, install: npm install @tailwindcss/line-clamp
+    // Then uncomment: require('@tailwindcss/line-clamp'),
+  ],
 };

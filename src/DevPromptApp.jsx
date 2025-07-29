@@ -26,12 +26,10 @@ import {
   Sun
 } from 'lucide-react';
 
-// Import our new components
+// Import simplified components (removed StorageErrorHandler and useLocalStorageWithErrorHandling)
 import { 
   LoadingSpinner, 
-  PromptCardSkeleton, 
-  StorageErrorHandler,
-  useLocalStorageWithErrorHandling,
+  PromptCardSkeleton,
   InlineSpinner
 } from './components';
 
@@ -170,17 +168,28 @@ const aiModels = [
 ];
 
 const DevPromptApp = () => {
-  // ✅ ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL RETURNS
+  // ✅ SIMPLIFIED STORAGE HANDLING - NO COMPLEX ERROR HANDLING
   
-  // Enhanced localStorage with error handling
-  const [prompts, setPrompts, { isLoading, error, retry, removeValue, clearError }] = 
-    useLocalStorageWithErrorHandling('dev-prompts', initialPrompts, {
-      onError: (err, operation) => {
-        console.error(`🔴 Storage error during ${operation}:`, err);
-      },
-      maxRetries: 3,
-      retryDelay: 1000
-    });
+  // Simple localStorage with fallback
+  const [prompts, setPrompts] = useState(() => {
+    try {
+      const stored = localStorage.getItem('dev-prompts');
+      return stored ? JSON.parse(stored) : initialPrompts;
+    } catch (error) {
+      console.warn('Failed to load prompts from localStorage:', error);
+      return initialPrompts;
+    }
+  });
+
+  // Save to localStorage whenever prompts change
+  useEffect(() => {
+    try {
+      localStorage.setItem('dev-prompts', JSON.stringify(prompts));
+    } catch (error) {
+      console.warn('Failed to save prompts to localStorage:', error);
+      // Could show a non-blocking notification here if desired
+    }
+  }, [prompts]);
 
   // UI State
   const [searchTerm, setSearchTerm] = useState('');
@@ -236,13 +245,9 @@ const DevPromptApp = () => {
         prompt.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         prompt.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       
+      // FIXED: Simplified category filtering
       const matchesCategory = selectedCategory === 'all' || 
-        prompt.category.toLowerCase() === selectedCategory.toLowerCase() ||
-        (selectedCategory === 'frontend' && prompt.category === 'Frontend') ||
-        (selectedCategory === 'backend' && prompt.category === 'Backend') ||
-        (selectedCategory === 'mobile' && prompt.category === 'Mobile') ||
-        (selectedCategory === 'testing' && prompt.category === 'Testing') ||
-        (selectedCategory === 'devops' && prompt.category === 'DevOps');
+        prompt.category.toLowerCase() === selectedCategory.toLowerCase();
       
       const matchesDifficulty = selectedDifficulty === 'all' || 
         prompt.difficulty?.toLowerCase() === selectedDifficulty.toLowerCase();
@@ -272,13 +277,13 @@ const DevPromptApp = () => {
     return filtered;
   }, [prompts, searchTerm, selectedCategory, selectedDifficulty, showFavoritesOnly, sortBy]);
 
-  // Calculate category counts
+  // FIXED: Simplified category counts calculation
   const categoriesWithCounts = useMemo(() => {
     return categories.map(category => ({
       ...category,
       count: category.id === 'all' 
         ? prompts.length 
-        : prompts.filter(p => p.category.toLowerCase() === category.id.replace('-', '')).length
+        : prompts.filter(p => p.category.toLowerCase() === category.id.toLowerCase()).length
     }));
   }, [prompts]);
 
@@ -391,62 +396,7 @@ const DevPromptApp = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [exportPrompts, copyPrompt, filteredAndSortedPrompts]);
 
-  // ✅ NOW WE CAN SAFELY HANDLE CONDITIONAL RENDERING AFTER ALL HOOKS
-
-  // Handle storage errors
-  if (error) {
-    return (
-      <StorageErrorHandler
-        error={error}
-        onRetry={retry}
-        onClearStorage={() => {
-          removeValue();
-          clearError();
-          if (typeof window !== 'undefined') {
-            window.location.reload();
-          }
-        }}
-        storageKey="dev-prompts"
-      />
-    );
-  }
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Header skeleton */}
-          <div className="flex justify-between items-center mb-8">
-            <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-            <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          </div>
-          
-          {/* Search bar skeleton */}
-          <div className="h-12 w-full bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse mb-6"></div>
-          
-          {/* Categories skeleton */}
-          <div className="flex gap-2 mb-6 overflow-x-auto">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse flex-shrink-0"></div>
-            ))}
-          </div>
-          
-          {/* Loading spinner */}
-          <div className="text-center mb-8">
-            <LoadingSpinner size="large" text="Loading your AI prompts..." />
-          </div>
-          
-          {/* Prompt cards skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(9)].map((_, i) => (
-              <PromptCardSkeleton key={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // ✅ REMOVED ALL COMPLEX ERROR HANDLING - DIRECT RENDER
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -781,7 +731,7 @@ const PromptCard = ({ prompt, viewMode, onCopy, onToggleFavorite }) => {
         </button>
       </div>
 
-      <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+      <p className="text-gray-600 dark:text-gray-300 mb-4">
         {prompt.description}
       </p>
 

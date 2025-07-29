@@ -1,7 +1,8 @@
 // src/components/index.js
+// ✅ SIMPLIFIED - Removed missing dependencies
+
 // Error handling components
 export { default as ErrorBoundary } from './ErrorBoundary';
-export { default as StorageErrorHandler } from './StorageErrorHandler';
 
 // Loading components
 export { default as LoadingSpinner, InlineSpinner, LoadingOverlay } from './LoadingSpinner';
@@ -17,6 +18,3 @@ export {
   TableRowSkeleton,
   ListItemSkeleton
 } from './SkeletonComponents';
-
-// Hooks
-export { default as useLocalStorageWithErrorHandling } from '../hooks/useLocalStorageWithErrorHandling';
