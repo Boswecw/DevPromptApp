@@ -1,8 +1,11 @@
 // src/components/index.js
-// ✅ UPDATED - Added HelpModal export
+// ✅ Updated with HelpModal export
 
 // Error handling components
 export { default as ErrorBoundary } from './ErrorBoundary';
+
+// Help component
+export { default as HelpModal } from './HelpModal';
 
 // Loading components
 export { default as LoadingSpinner, InlineSpinner, LoadingOverlay } from './LoadingSpinner';
@@ -18,6 +21,3 @@ export {
   TableRowSkeleton,
   ListItemSkeleton
 } from './SkeletonComponents';
-
-// Modal components
-export { default as HelpModal } from './HelpModal';
