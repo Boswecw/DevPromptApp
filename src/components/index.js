@@ -1,5 +1,5 @@
 // src/components/index.js
-// ✅ SIMPLIFIED - Removed missing dependencies
+// ✅ UPDATED - Added HelpModal export
 
 // Error handling components
 export { default as ErrorBoundary } from './ErrorBoundary';
@@ -18,3 +18,6 @@ export {
   TableRowSkeleton,
   ListItemSkeleton
 } from './SkeletonComponents';
+
+// Modal components
+export { default as HelpModal } from './HelpModal';

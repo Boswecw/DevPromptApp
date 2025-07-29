@@ -26,11 +26,12 @@ import {
   Sun
 } from 'lucide-react';
 
-// Import simplified components (removed StorageErrorHandler and useLocalStorageWithErrorHandling)
+// Import components
 import { 
   LoadingSpinner, 
   PromptCardSkeleton,
-  InlineSpinner
+  InlineSpinner,
+  HelpModal
 } from './components';
 
 // Initial prompts data
@@ -199,7 +200,7 @@ const DevPromptApp = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState('updated'); // 'updated', 'created', 'usage', 'rating', 'title'
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' || 
@@ -377,10 +378,10 @@ const DevPromptApp = () => {
         e.preventDefault();
         exportPrompts();
       }
-      // ? - Show keyboard help
+      // ? - Show help
       else if (e.key === '?' && !e.target.matches('input, textarea')) {
         e.preventDefault();
-        setShowKeyboardHelp(true);
+        setShowHelp(true);
       }
       // 1-4 - Copy prompts (when not in input)
       else if (['1', '2', '3', '4'].includes(e.key) && !e.target.matches('input, textarea')) {
@@ -539,9 +540,9 @@ const DevPromptApp = () => {
           </p>
           
           <button
-            onClick={() => setShowKeyboardHelp(true)}
+            onClick={() => setShowHelp(true)}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            title="Keyboard shortcuts (?)"
+            title="Help & Documentation (?)"
           >
             <Keyboard className="w-5 h-5" />
           </button>
@@ -596,10 +597,11 @@ const DevPromptApp = () => {
         />
       )}
 
-      {/* Keyboard Help Modal */}
-      {showKeyboardHelp && (
-        <KeyboardHelpModal onClose={() => setShowKeyboardHelp(false)} />
-      )}
+      {/* Help Modal */}
+      <HelpModal 
+        isOpen={showHelp} 
+        onClose={() => setShowHelp(false)} 
+      />
     </div>
   );
 };
@@ -921,55 +923,6 @@ const AnalyticsModal = ({ analytics, onClose }) => (
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Keyboard Help Modal Component
-const KeyboardHelpModal = ({ onClose }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Keyboard Shortcuts</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Focus search</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">Ctrl + K</kbd>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Export prompts</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">Ctrl + E</kbd>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Copy ChatGPT</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">1</kbd>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Copy Claude</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">2</kbd>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Copy Gemini</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">3</kbd>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Copy Copilot</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">4</kbd>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 dark:text-white">Show this help</span>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm">?</kbd>
           </div>
         </div>
       </div>
