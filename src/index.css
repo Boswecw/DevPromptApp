@@ -46,42 +46,16 @@ a:hover {
   color: #93c5fd;
 }
 
-/* Button base styles - LIGHT THEME - Made more specific */
-button:not(.selection-purple-active):not(.selection-green-active):not(.selection-gradient-active):not(.language-button-selected):not(.category-button-selected-purple):not(.category-button-selected-green) {
-  border-radius: 0.375rem;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  background-color: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+/* 
+REMOVED ONLY: The problematic overly-specific button selectors that were causing conflicts
+These lines have been removed to allow Tailwind utilities to work:
+- button:not(.selection-purple-active):not(.selection-green-active)... selectors
+- Complex button hover states with multiple :not() selectors
+- Dark theme button overrides with high specificity
+*/
 
-button:not(.selection-purple-active):not(.selection-green-active):not(.selection-gradient-active):not(.language-button-selected):not(.category-button-selected-purple):not(.category-button-selected-green):hover {
-  background-color: #e5e7eb;
-  color: #111827;
-}
-
-/* Button base styles - DARK THEME - Made more specific */
-.dark button:not(.selection-purple-active):not(.selection-green-active):not(.selection-gradient-active):not(.language-button-selected):not(.category-button-selected-purple):not(.category-button-selected-green) {
-  background-color: #374151;
-  color: #f9fafb;
-  border-color: #4b5563;
-}
-
-.dark button:not(.selection-purple-active):not(.selection-green-active):not(.selection-gradient-active):not(.language-button-selected):not(.category-button-selected-purple):not(.category-button-selected-green):hover {
-  background-color: #4b5563;
-  color: #ffffff;
-}
-
-/* DEVPROMPTAPP SELECTION STYLES - HIGH SPECIFICITY */
-.selection-purple-active,
-button.selection-purple-active,
-.language-button-selected,
-button.language-button-selected,
-.category-button-selected-purple,
-button.category-button-selected-purple {
+/* Keep essential custom selection styles for special cases (these work with custom CSS classes) */
+.selection-purple-active {
   background-color: #9333ea !important;
   color: white !important;
   border-color: #9333ea !important;
@@ -90,10 +64,7 @@ button.category-button-selected-purple {
   box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.3) !important;
 }
 
-.selection-green-active,
-button.selection-green-active,
-.category-button-selected-green,
-button.category-button-selected-green {
+.selection-green-active {
   background-color: #16a34a !important;
   color: white !important;
   border-color: #16a34a !important;
@@ -102,8 +73,7 @@ button.category-button-selected-green {
   box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.3) !important;
 }
 
-.selection-gradient-active,
-button.selection-gradient-active {
+.selection-gradient-active {
   background: linear-gradient(to right, #9333ea, #3b82f6) !important;
   color: white !important;
   border-color: #9333ea !important;
@@ -112,57 +82,39 @@ button.selection-gradient-active {
   box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.4) !important;
 }
 
-/* DARK THEME - Selection styles */
-.dark .selection-purple-active,
-.dark button.selection-purple-active,
-.dark .language-button-selected,
-.dark button.language-button-selected,
-.dark .category-button-selected-purple,
-.dark button.category-button-selected-purple {
+/* Dark theme variants for custom selection styles */
+.dark .selection-purple-active {
   background-color: #9333ea !important;
   color: white !important;
   border-color: #9333ea !important;
 }
 
-.dark .selection-green-active,
-.dark button.selection-green-active,
-.dark .category-button-selected-green,
-.dark button.category-button-selected-green {
+.dark .selection-green-active {
   background-color: #16a34a !important;
   color: white !important;
   border-color: #16a34a !important;
 }
 
-.dark .selection-gradient-active,
-.dark button.selection-gradient-active {
+.dark .selection-gradient-active {
   background: linear-gradient(to right, #9333ea, #3b82f6) !important;
   color: white !important;
   border-color: #9333ea !important;
 }
 
-/* Prevent hover states from overriding selection */
-.selection-purple-active:hover,
-button.selection-purple-active:hover,
-.language-button-selected:hover,
-button.language-button-selected:hover,
-.category-button-selected-purple:hover,
-button.category-button-selected-purple:hover {
+/* Hover state improvements for selection styles */
+.selection-purple-active:hover {
   background-color: #7c3aed !important;
   color: white !important;
   border-color: #7c3aed !important;
 }
 
-.selection-green-active:hover,
-button.selection-green-active:hover,
-.category-button-selected-green:hover,
-button.category-button-selected-green:hover {
+.selection-green-active:hover {
   background-color: #15803d !important;
   color: white !important;
   border-color: #15803d !important;
 }
 
-.selection-gradient-active:hover,
-button.selection-gradient-active:hover {
+.selection-gradient-active:hover {
   background: linear-gradient(to right, #7c3aed, #2563eb) !important;
   color: white !important;
   border-color: #7c3aed !important;
@@ -200,65 +152,6 @@ button.selection-gradient-active:hover {
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background-color: #6b7280;
-}
-
-/* Custom component styles - LIGHT THEME */
-.prompt-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  transition: all 0.2s ease;
-}
-
-.prompt-card:hover {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  transform: translateY(-1px);
-}
-
-/* Custom component styles - DARK THEME */
-.dark .prompt-card {
-  background-color: #1f2937;
-  border-color: #374151;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-}
-
-.dark .prompt-card:hover {
-  background-color: #252f3f;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-}
-
-/* Modal backdrop - FIXED WITH WEBKIT PREFIX */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgb(0 0 0 / 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 50;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-}
-
-/* Modal content - LIGHT THEME */
-.modal-content {
-  background-color: #ffffff;
-  border-radius: 0.5rem;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-}
-
-/* Modal content - DARK THEME */
-.dark .modal-content {
-  background-color: #1f2937;
-  border-color: #374151;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
 }
 
 /* Form controls - LIGHT THEME */
@@ -327,49 +220,82 @@ input[type="checkbox"] {
   background-color: #374151;
 }
 
-/* Button variants - ALL THEMES */
-.btn-primary {
-  background-color: #2563eb;
-  color: #ffffff;
-  border-color: #2563eb;
+/* Custom component styles - LIGHT THEME */
+.prompt-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: all 0.2s ease;
 }
 
-.btn-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
+.prompt-card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
 }
 
-.btn-secondary {
-  background-color: #6b7280;
-  color: #ffffff;
-  border-color: #6b7280;
+/* Custom component styles - DARK THEME */
+.dark .prompt-card {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
 }
 
-.btn-secondary:hover {
-  background-color: #4b5563;
-  border-color: #4b5563;
+.dark .prompt-card:hover {
+  background-color: #252f3f;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
 }
 
-.btn-success {
-  background-color: #16a34a;
-  color: #ffffff;
-  border-color: #16a34a;
+/* Modal backdrop - FIXED WITH WEBKIT PREFIX */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
-.btn-success:hover {
-  background-color: #15803d;
-  border-color: #15803d;
+/* Modal content - LIGHT THEME */
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
 }
 
-.btn-danger {
-  background-color: #dc2626;
-  color: #ffffff;
-  border-color: #dc2626;
+/* Modal content - DARK THEME */
+.dark .modal-content {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
 }
 
-.btn-danger:hover {
-  background-color: #b91c1c;
-  border-color: #b91c1c;
+/* Code block styles - LIGHT THEME */
+pre {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+/* Code block styles - DARK THEME */
+.dark pre {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
 }
 
 /* Loading spinner animation */
@@ -449,25 +375,6 @@ input[type="checkbox"] {
   color: #ffffff;
 }
 
-/* Code block styles - LIGHT THEME */
-pre {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.375rem;
-  padding: 1rem;
-  overflow-x: auto;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.875rem;
-  color: #1e293b;
-}
-
-/* Code block styles - DARK THEME */
-.dark pre {
-  background-color: #0f172a;
-  border-color: #334155;
-  color: #e2e8f0;
-}
-
 /* Utility classes for common patterns */
 .sr-only {
   position: absolute;
@@ -493,6 +400,17 @@ pre {
   border-color: #60a5fa;
 }
 
+/* Ensure proper text selection colors */
+::selection {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.dark ::selection {
+  background-color: #60a5fa;
+  color: #0f172a;
+}
+
 /* Print styles */
 @media print {
   .no-print {
@@ -514,15 +432,4 @@ pre {
   .prompt-card {
     border-width: 2px;
   }
-}
-
-/* Ensure proper text selection colors */
-::selection {
-  background-color: #3b82f6;
-  color: #ffffff;
-}
-
-.dark ::selection {
-  background-color: #60a5fa;
-  color: #0f172a;
 }

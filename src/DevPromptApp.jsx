@@ -1,4 +1,4 @@
-// src/DevPromptApp.jsx - COMPLETE VERSION: Fixed Tech Stack Color Selection
+// src/DevPromptApp.jsx - COMPLETE VERSION: Fixed Language and Category Button Selection
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Copy, 
@@ -171,6 +171,15 @@ const DevPromptApp = () => {
       setSavedPrompts([]);
     }
   }, []);
+
+  // Save prompts to localStorage whenever savedPrompts changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('saved-prompts', JSON.stringify(savedPrompts));
+    } catch (error) {
+      console.error('Failed to save prompts:', error);
+    }
+  }, [savedPrompts]);
 
   // Show notification helper
   const showNotification = useCallback((message, type = 'success') => {
@@ -445,90 +454,7 @@ Please provide inline comments and suggest VS Code extensions that might be help
   }, [showNotification]);
 
   return (
-    <>
-      {/* CSS Override for Selection Issues */}
-      <style>{`
-        .selection-purple-active {
-          background-color: #9333ea !important;
-          color: white !important;
-          border-color: #9333ea !important;
-          box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.3) !important;
-        }
-        
-        .selection-green-active {
-          background-color: #16a34a !important;
-          color: white !important;
-          border-color: #16a34a !important;
-          box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.3) !important;
-        }
-        
-        .selection-gradient-active {
-          background: linear-gradient(to right, #9333ea, #3b82f6) !important;
-          color: white !important;
-          border-color: #9333ea !important;
-          box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.4) !important;
-        }
-        
-        /* Specific fixes for Language and Category sections */
-        .language-button-selected {
-          background-color: #9333ea !important;
-          color: white !important;
-          border: 2px solid #9333ea !important;
-          box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.3) !important;
-        }
-        
-        .category-button-selected-purple {
-          background-color: #9333ea !important;
-          color: white !important;
-          border: 2px solid #9333ea !important;
-          box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.3) !important;
-        }
-        
-        .category-button-selected-green {
-          background-color: #16a34a !important;
-          color: white !important;
-          border: 2px solid #16a34a !important;
-          box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.3) !important;
-        }
-        
-        .dark .selection-purple-active {
-          background-color: #9333ea !important;
-          color: white !important;
-          border-color: #9333ea !important;
-        }
-        
-        .dark .selection-green-active {
-          background-color: #16a34a !important;
-          color: white !important;
-          border-color: #16a34a !important;
-        }
-        
-        .dark .selection-gradient-active {
-          background: linear-gradient(to right, #9333ea, #3b82f6) !important;
-          color: white !important;
-          border-color: #9333ea !important;
-        }
-        
-        .dark .language-button-selected {
-          background-color: #9333ea !important;
-          color: white !important;
-          border: 2px solid #9333ea !important;
-        }
-        
-        .dark .category-button-selected-purple {
-          background-color: #9333ea !important;
-          color: white !important;
-          border: 2px solid #9333ea !important;
-        }
-        
-        .dark .category-button-selected-green {
-          background-color: #16a34a !important;
-          color: white !important;
-          border: 2px solid #16a34a !important;
-        }
-      `}</style>
-      
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -572,7 +498,7 @@ Please provide inline comments and suggest VS Code extensions that might be help
                     onClick={() => setSelectedModel(model.id)}
                     className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 border-2 transform hover:scale-105 ${
                       selectedModel === model.id
-                        ? 'selection-purple-active'
+                        ? 'bg-purple-600 dark:bg-purple-600 text-white border-purple-600 dark:border-purple-600 shadow-lg'
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-700'
                     }`}
                   >
@@ -666,7 +592,7 @@ Please provide inline comments and suggest VS Code extensions that might be help
                     onClick={() => setSelectedDifficulty(difficulty.id)}
                     className={`p-4 rounded-lg border-2 transition-all duration-200 text-left transform hover:scale-105 ${
                       selectedDifficulty === difficulty.id
-                        ? 'selection-purple-active'
+                        ? 'bg-purple-600 dark:bg-purple-600 text-white border-purple-600 dark:border-purple-600 shadow-lg'
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-700'
                     }`}
                   >
@@ -683,13 +609,13 @@ Please provide inline comments and suggest VS Code extensions that might be help
               </div>
             </div>
 
-            {/* Tech Stack Selection - FIXED COLOR LOGIC */}
+            {/* Tech Stack Selection */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 Tech Stack
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 {TECH_STACKS.map(stack => (
                   <button
                     key={stack.id}
@@ -697,8 +623,8 @@ Please provide inline comments and suggest VS Code extensions that might be help
                     className={`p-4 rounded-lg border-2 transition-all duration-200 text-left transform hover:scale-105 ${
                       selectedTechStack === stack.id
                         ? (stack.id === 'chucks-power-stack' 
-                            ? 'selection-gradient-active'
-                            : 'selection-purple-active')
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-600 dark:to-blue-600 text-white border-purple-600 dark:border-purple-600 shadow-lg'
+                            : 'bg-purple-600 dark:bg-purple-600 text-white border-purple-600 dark:border-purple-600 shadow-lg')
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-700'
                     }`}
                   >
@@ -707,7 +633,6 @@ Please provide inline comments and suggest VS Code extensions that might be help
                       <div>
                         <div className="font-medium">{stack.name}</div>
                         <div className="text-xs opacity-75 mt-1">{stack.description}</div>
-                        {/* Selection indicator */}
                         {selectedTechStack === stack.id && (
                           <div className="flex items-center gap-1 mt-2">
                             <Check className="w-3 h-3" />
@@ -734,14 +659,13 @@ Please provide inline comments and suggest VS Code extensions that might be help
                     onClick={() => toggleTag(tag)}
                     className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 border-2 transform hover:scale-105 ${
                       selectedTags.includes(tag)
-                        ? 'selection-purple-active'
+                        ? (tag.includes('WCAG') || tag.includes('ARIA') || tag.includes('Screen Reader') || tag.includes('Keyboard') || tag.includes('Color Contrast')
+                            ? 'bg-green-600 dark:bg-green-600 text-white border-green-600 dark:border-green-600'
+                            : 'bg-purple-600 dark:bg-purple-600 text-white border-purple-600 dark:border-purple-600')
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-700'
                     }`}
                   >
                     {tag}
-                    {selectedTags.includes(tag) && (
-                      <Check className="w-3 h-3 ml-1 inline" />
-                    )}
                   </button>
                 ))}
               </div>
@@ -756,70 +680,69 @@ Please provide inline comments and suggest VS Code extensions that might be help
               <textarea
                 value={customRequirements}
                 onChange={(e) => setCustomRequirements(e.target.value)}
-                placeholder="Add any specific requirements, constraints, or additional context..."
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                rows="4"
+                placeholder="Add any specific requirements, constraints, or preferences..."
+                className="w-full h-24 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
-            {/* Generated Prompt Preview */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  {showPreview ? <Eye className="w-5 h-5 text-purple-600 dark:text-purple-400" /> : <EyeOff className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
-                  Generated Prompt
-                </h2>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
-                    title={showPreview ? 'Hide preview' : 'Show preview'}
-                  >
-                    {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    {showPreview ? 'Hide' : 'Show'}
-                  </button>
-                  <button
-                    onClick={copyToClipboard}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copy
-                  </button>
-                  <button
-                    onClick={savePrompt}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Save className="w-4 h-4" />
-                    Save
-                  </button>
-                </div>
-              </div>
-              {showPreview && (
-                <div className="p-6">
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto">
-                    {generatedPrompt}
+            {/* Generated Prompt Display */}
+            {showPreview && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Eye className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    Generated Prompt
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowPreview(false)}
+                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      title="Hide Preview"
+                    >
+                      <EyeOff className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={savePrompt}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save
+                    </button>
+                    <button
+                      onClick={copyToClipboard}
+                      className="flex items-center gap-2 px-3 py-2 bg-purple-600 dark:bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 dark:hover:bg-purple-700 transition-colors"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </button>
                   </div>
                 </div>
-              )}
-            </div>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                  {generatedPrompt}
+                </div>
+              </div>
+            )}
 
             {/* Saved Prompts */}
             {savedPrompts.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Star className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  Saved Prompts
+                  Saved Prompts ({savedPrompts.length})
                 </h2>
-                <div className="space-y-2">
-                  {savedPrompts.map(prompt => (
+                <div className="space-y-3">
+                  {savedPrompts.map((prompt) => (
                     <div
                       key={prompt.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                      onClick={() => loadPrompt(prompt)}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                     >
-                      <div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium text-gray-900 dark:text-white">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                          <span className="font-medium">
+                            {AI_MODELS.find(m => m.id === prompt.model)?.name}
+                          </span>
+                          <span className="text-gray-500 dark:text-gray-400">•</span>
+                          <span className="text-gray-600 dark:text-gray-300">
                             {PROGRAMMING_LANGUAGES.find(l => l.id === prompt.language)?.name}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">•</span>
@@ -835,6 +758,12 @@ Please provide inline comments and suggest VS Code extensions that might be help
                           {new Date(prompt.createdAt).toLocaleDateString()}
                         </div>
                       </div>
+                      <button
+                        onClick={() => loadPrompt(prompt)}
+                        className="ml-4 px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded text-xs font-medium hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+                      >
+                        Load
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -864,7 +793,6 @@ Please provide inline comments and suggest VS Code extensions that might be help
         onClose={() => setShowHelp(false)} 
       />
     </div>
-    </>
   );
 };
 
