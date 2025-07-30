@@ -1,14 +1,14 @@
-// src/components/ThemeProvider.jsx - ONLY exports component (no context, no hooks)
+// src/components/ThemeProvider.jsx - FIXED THEME PROVIDER
 import React from 'react';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useTheme } from '../hooks/useTheme';
 
 const ThemeProvider = ({ children }) => {
-  const { theme, toggleTheme, setTheme } = useTheme();
+  const { theme, isDarkMode, toggleTheme, setTheme } = useTheme();
   
   const contextValue = {
-    isDarkMode: theme === 'dark',
     theme,
+    isDarkMode,
     toggleTheme,
     setTheme
   };

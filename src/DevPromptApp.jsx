@@ -1,4 +1,4 @@
-// src/DevPromptApp.jsx - Fixed imports and structure
+// src/DevPromptApp.jsx - FULLY FIXED DARK/LIGHT THEME SUPPORT
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Copy, 
@@ -39,10 +39,10 @@ const PROGRAMMING_LANGUAGES = [
 
 // AI Models configuration
 const AI_MODELS = [
-  { id: 'chatgpt', name: 'ChatGPT', color: 'bg-green-600', icon: '🤖' },
-  { id: 'claude', name: 'Claude', color: 'bg-purple-600', icon: '🎭' },
-  { id: 'gemini', name: 'Gemini', color: 'bg-blue-600', icon: '💎' },
-  { id: 'copilot', name: 'GitHub Copilot', color: 'bg-gray-700', icon: '🚁' }
+  { id: 'chatgpt', name: 'ChatGPT', color: 'bg-green-600 hover:bg-green-700', darkColor: 'dark:bg-green-600 dark:hover:bg-green-700', icon: '🤖' },
+  { id: 'claude', name: 'Claude', color: 'bg-purple-600 hover:bg-purple-700', darkColor: 'dark:bg-purple-600 dark:hover:bg-purple-700', icon: '🎭' },
+  { id: 'gemini', name: 'Gemini', color: 'bg-blue-600 hover:bg-blue-700', darkColor: 'dark:bg-blue-600 dark:hover:bg-blue-700', icon: '💎' },
+  { id: 'copilot', name: 'GitHub Copilot', color: 'bg-gray-700 hover:bg-gray-800', darkColor: 'dark:bg-gray-600 dark:hover:bg-gray-700', icon: '🚁' }
 ];
 
 // Prompt categories
@@ -59,9 +59,9 @@ const CATEGORIES = [
 
 // Difficulty levels
 const DIFFICULTY_LEVELS = [
-  { id: 'beginner', name: 'Beginner', color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' },
-  { id: 'intermediate', name: 'Intermediate', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' },
-  { id: 'advanced', name: 'Advanced', color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' }
+  { id: 'beginner', name: 'Beginner', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+  { id: 'intermediate', name: 'Intermediate', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  { id: 'advanced', name: 'Advanced', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' }
 ];
 
 // Feature tags
@@ -307,15 +307,15 @@ Deliver:
   }, [copyToClipboard, savePrompt, showHelp]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+      {/* Header - FIXED DARK/LIGHT THEME */}
+      <header className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               AI Prompt Builder
             </h1>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
               <Code className="w-4 h-4" />
               <span>Multi-Language Code Generation</span>
             </div>
@@ -324,7 +324,7 @@ Deliver:
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowHelp(true)}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
               title="Help (?)"
             >
               <Keyboard className="w-5 h-5" />
@@ -336,8 +336,8 @@ Deliver:
       </header>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* Left Sidebar - Language & Category */}
-        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto">
+        {/* Left Sidebar - Language & Category - FIXED DARK/LIGHT THEME */}
+        <div className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto">
           <div className="space-y-6">
             {/* Programming Language */}
             <div>
@@ -350,10 +350,10 @@ Deliver:
                   <button
                     key={lang.id}
                     onClick={() => setSelectedLanguage(lang.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                       selectedLanguage === lang.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                     }`}
                   >
                     <span className="mr-2">{lang.icon}</span>
@@ -374,10 +374,10 @@ Deliver:
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                       selectedCategory === category.id
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        ? 'bg-purple-600 text-white shadow-md'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                     }`}
                   >
                     <span className="mr-2">{category.icon}</span>
@@ -391,21 +391,21 @@ Deliver:
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
-          {/* Top Controls - AI Model & Difficulty */}
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+          {/* Top Controls - AI Model & Difficulty - FIXED DARK/LIGHT THEME */}
+          <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">AI Model:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">AI Model:</span>
                   <div className="flex gap-2">
                     {AI_MODELS.map(model => (
                       <button
                         key={model.id}
                         onClick={() => setSelectedModel(model.id)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                           selectedModel === model.id
-                            ? `${model.color} text-white`
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? `${model.color} ${model.darkColor} text-white shadow-md`
+                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                         }`}
                       >
                         <span className="mr-1">{model.icon}</span>
@@ -418,7 +418,7 @@ Deliver:
 
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Difficulty:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Difficulty:</span>
                   <select
                     value={selectedDifficulty}
                     onChange={(e) => setSelectedDifficulty(e.target.value)}
@@ -435,19 +435,19 @@ Deliver:
             </div>
           </div>
 
-          {/* Center - Prompt Preview/Editor */}
-          <div className="flex-1 p-6">
-            <div className="h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          {/* Center - Prompt Preview/Editor - FIXED DARK/LIGHT THEME */}
+          <div className="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+            <div className="h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col shadow-sm">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded-t-lg">
                 <div className="flex items-center gap-3">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Generated Prompt Preview
                   </h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded">
+                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded">
                       {PROGRAMMING_LANGUAGES.find(l => l.id === selectedLanguage)?.name}
                     </span>
-                    <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400 rounded">
+                    <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded">
                       {CATEGORIES.find(c => c.id === selectedCategory)?.name}
                     </span>
                   </div>
@@ -456,14 +456,14 @@ Deliver:
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowPreview(!showPreview)}
-                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-all"
                     title={showPreview ? 'Hide preview' : 'Show preview'}
                   >
                     {showPreview ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                   <button
                     onClick={savePrompt}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
                     title="Save prompt (Ctrl+S)"
                   >
                     <Save className="w-4 h-4" />
@@ -471,7 +471,7 @@ Deliver:
                   </button>
                   <button
                     onClick={copyToClipboard}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
                     title="Copy to clipboard (Ctrl+C)"
                   >
                     <Copy className="w-4 h-4" />
@@ -481,15 +481,15 @@ Deliver:
               </div>
               
               {showPreview && (
-                <div className="flex-1 p-4 overflow-y-auto">
-                  <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                <div className="flex-1 p-4 overflow-y-auto bg-white dark:bg-gray-800">
+                  <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800 dark:text-gray-100 leading-relaxed">
                     {generatedPrompt}
                   </pre>
                 </div>
               )}
               
               {!showPreview && (
-                <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
                   <div className="text-center">
                     <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Preview hidden. Click the eye icon to show the generated prompt.</p>
@@ -500,8 +500,8 @@ Deliver:
           </div>
         </div>
 
-        {/* Right Sidebar - Tags & Custom Requirements */}
-        <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 overflow-y-auto">
+        {/* Right Sidebar - Tags & Custom Requirements - FIXED DARK/LIGHT THEME */}
+        <div className="w-80 bg-gray-50 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 overflow-y-auto">
           <div className="space-y-6">
             {/* Feature Tags */}
             <div>
@@ -513,7 +513,7 @@ Deliver:
                 {FEATURE_TAGS.map(tag => (
                   <label
                     key={tag}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -525,9 +525,9 @@ Deliver:
                           setSelectedTags(prev => prev.filter(t => t !== tag));
                         }
                       }}
-                      className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-gray-700"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{tag}</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-200">{tag}</span>
                   </label>
                 ))}
               </div>
@@ -544,7 +544,7 @@ Deliver:
                 onChange={(e) => setCustomRequirements(e.target.value)}
                 placeholder="Add specific requirements, constraints, or additional features..."
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
@@ -559,7 +559,7 @@ Deliver:
                   {savedPrompts.slice(0, 5).map(prompt => (
                     <div
                       key={prompt.id}
-                      className="p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      className="p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
                       onClick={() => {
                         setSelectedModel(prompt.model);
                         setSelectedLanguage(prompt.language);
@@ -572,14 +572,14 @@ Deliver:
                       title="Click to load this prompt"
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 px-2 py-0.5 rounded">
+                        <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded">
                           {PROGRAMMING_LANGUAGES.find(l => l.id === prompt.language)?.name}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {new Date(prompt.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 truncate">
+                      <p className="text-gray-700 dark:text-gray-200 truncate">
                         {CATEGORIES.find(c => c.id === prompt.category)?.name} - {prompt.difficulty}
                       </p>
                     </div>
@@ -591,7 +591,7 @@ Deliver:
         </div>
       </div>
 
-      {/* Notification */}
+      {/* Notification - FIXED DARK/LIGHT THEME */}
       {notification && (
         <div className="fixed bottom-4 right-4 z-50">
           <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-fade-in ${

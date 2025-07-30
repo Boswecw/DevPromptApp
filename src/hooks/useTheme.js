@@ -1,25 +1,22 @@
-// src/hooks/useTheme.js
-import { useState, useEffect, useContext } from 'react';
-import { ThemeContext } from '../contexts/ThemeContext';
+// src/hooks/useTheme.js - FIXED THEME LOGIC
+import { useState, useEffect } from 'react';
 
-// Custom hook for theme management
 export function useTheme() {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check if we're in a browser environment
-    if (typeof window === 'undefined') return false;
+  const [theme, setThemeState] = useState(() => {
+    if (typeof window === 'undefined') return 'light';
     
     try {
       // Check localStorage first
       const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        return savedTheme === 'dark';
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        return savedTheme;
       }
       
       // Fall back to system preference
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     } catch {
       console.warn('Failed to access localStorage or matchMedia');
-      return false;
+      return 'light';
     }
   });
 
@@ -27,19 +24,22 @@ export function useTheme() {
   useEffect(() => {
     try {
       const root = document.documentElement;
+      const body = document.body;
       
-      if (isDarkMode) {
+      if (theme === 'dark') {
         root.classList.add('dark');
+        body.classList.add('dark');
       } else {
         root.classList.remove('dark');
+        body.classList.remove('dark');
       }
       
       // Save to localStorage
-      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      localStorage.setItem('theme', theme);
     } catch {
       console.warn('Failed to apply theme');
     }
-  }, [isDarkMode]);
+  }, [theme]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -52,11 +52,11 @@ export function useTheme() {
       try {
         const savedTheme = localStorage.getItem('theme');
         if (!savedTheme) {
-          setIsDarkMode(e.matches);
+          setThemeState(e.matches ? 'dark' : 'light');
         }
       } catch {
         // If localStorage fails, still respond to system changes
-        setIsDarkMode(e.matches);
+        setThemeState(e.matches ? 'dark' : 'light');
       }
     };
 
@@ -65,31 +65,21 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
+    setThemeState(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  const setTheme = (theme) => {
-    if (theme === 'dark' || theme === 'light') {
-      setIsDarkMode(theme === 'dark');
+  const setTheme = (newTheme) => {
+    if (newTheme === 'dark' || newTheme === 'light') {
+      setThemeState(newTheme);
     } else {
       console.warn('Invalid theme. Use "dark" or "light".');
     }
   };
 
   return {
-    isDarkMode,
+    theme,
+    isDarkMode: theme === 'dark',
     toggleTheme,
     setTheme
   };
-}
-
-// Hook to use theme context (for consuming components)
-export function useThemeContext() {
-  const context = useContext(ThemeContext);
-  
-  if (!context) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
-  }
-  
-  return context;
 }
