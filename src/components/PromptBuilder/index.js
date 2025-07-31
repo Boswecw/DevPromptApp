@@ -1,17 +1,35 @@
-// src/components/PromptBuilder/index.js
-// Export all PromptBuilder components
+// src/components/index.js - Complete exports with StorageErrorHandler
+// Error handling components
+export { default as ErrorBoundary } from './ErrorBoundary';
 
-export { default as ModelSelector } from './ModelSelector';
-export { default as LanguageSelector } from './LanguageSelector';
-export { default as CategorySelector } from './CategorySelector';
-export { default as DifficultySelector } from './DifficultySelector';
-export { default as TechStackSelector } from './TechStackSelector';
-export { default as FeatureTagsSelector } from './FeatureTagsSelector';
-export { default as CustomRequirements } from './CustomRequirements';
-export { default as PromptPreview } from './PromptPreview';
-export { default as SavedPrompts } from './SavedPrompts';
-export { default as PromptBuilder } from './PromptBuilder';
+// Theme components
+export { default as ThemeProvider } from './ThemeProvider';
+export { default as ThemeToggle } from './ThemeToggle';
 
-// Export utilities
-export { generatePrompt } from './promptGenerator';
-export * from './constants';
+// Help component
+export { default as HelpModal } from './HelpModal';
+
+// Loading components
+export { default as LoadingSpinner, InlineSpinner, LoadingOverlay } from './LoadingSpinner';
+
+// Skeleton components
+export { 
+  default as SkeletonElement,
+  PromptCardSkeleton,
+  SearchBarSkeleton,
+  CategoryFilterSkeleton,
+  AnalyticsCardSkeleton,
+  PageSkeleton,
+  TableRowSkeleton,
+  ListItemSkeleton
+} from './SkeletonComponents';
+
+// Storage error handler
+export { default as StorageErrorHandler } from './StorageErrorHandler';
+
+// Demo component (for testing)
+export { default as StorageErrorDemo } from './StorageErrorDemo';
+
+// Export hooks and contexts from their proper locations
+export { useThemeContext } from '../hooks/useThemeContext';
+export { ThemeContext } from '../contexts/ThemeContext';

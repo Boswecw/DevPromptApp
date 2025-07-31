@@ -1,14 +1,13 @@
-// src/components/PromptBuilder/PromptBuilder.jsx - REFACTORED DevPromptApp
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+// src/components/PromptBuilder/PromptBuilder.jsx - SIMPLIFIED WITH useStorage HOOK
+import React, { useState, useMemo, useCallback } from 'react';
 import { Code, Settings, Check, X } from 'lucide-react';
 
-// Import theme context - FIXES THE MISSING THEME CONNECTION
-// Note: Theme switching is handled automatically by Tailwind dark: classes
-// The useTheme hook applies 'dark' class to HTML element, enabling dark: classes
+// Import hooks
 import { useThemeContext } from '../../hooks/useThemeContext';
+import { useArrayStorage } from '../../hooks/useStorage';
 
 // Import components
-import { HelpModal, ThemeToggle } from '../index';
+import { HelpModal, ThemeToggle, StorageErrorHandler } from '../index';
 import ModelSelector from './ModelSelector';
 import LanguageSelector from './LanguageSelector';
 import CategorySelector from './CategorySelector';
@@ -30,8 +29,7 @@ import {
 } from './constants';
 
 const PromptBuilder = () => {
-  // FIXED: Connect to theme context to ensure theme system is initialized
-  // Theme switching is handled automatically by Tailwind dark: classes
+  // Connect to theme context
   useThemeContext();
 
   // Prompt builder state
@@ -47,30 +45,18 @@ const PromptBuilder = () => {
   const [showPreview, setShowPreview] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [savedPrompts, setSavedPrompts] = useState([]);
-
-  // Load saved prompts with error handling
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('saved-prompts');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSavedPrompts(Array.isArray(parsed) ? parsed : []);
-      }
-    } catch (error) {
-      console.error('Failed to load saved prompts:', error);
-      setSavedPrompts([]);
-    }
-  }, []);
-
-  // Save prompts to localStorage whenever savedPrompts changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('saved-prompts', JSON.stringify(savedPrompts));
-    } catch (error) {
-      console.error('Failed to save prompts:', error);
-    }
-  }, [savedPrompts]);
+  
+  // Storage management with the custom hook
+  const {
+    value: savedPrompts,
+    addItem: addPrompt,
+    limitSize,
+    isSupported: isStorageSupported,
+    error: storageError,
+    isCriticalError,
+    retry: retryStorage,
+    clearStorage
+  } = useArrayStorage('saved-prompts', []);
 
   // Show notification helper
   const showNotification = useCallback((message, type = 'success') => {
@@ -111,7 +97,7 @@ const PromptBuilder = () => {
     }
   }, [generatedPrompt, showNotification]);
 
-  // Save current prompt
+  // Save current prompt with enhanced error handling
   const savePrompt = useCallback(() => {
     const newPrompt = {
       id: Date.now(),
@@ -126,9 +112,26 @@ const PromptBuilder = () => {
       createdAt: new Date().toISOString()
     };
 
-    setSavedPrompts(prev => [newPrompt, ...prev.slice(0, 9)]); // Keep only 10 most recent
-    showNotification('Prompt saved successfully!');
-  }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTechStack, selectedTags, customRequirements, generatedPrompt, showNotification]);
+    // Add the new prompt
+    const result = addPrompt(newPrompt);
+    
+    if (result.success) {
+      // Limit to 10 most recent prompts
+      limitSize(10);
+      
+      if (isStorageSupported) {
+        showNotification('Prompt saved successfully!');
+      } else {
+        showNotification('Prompt saved to session (won\'t persist)', 'warning');
+      }
+    } else {
+      if (result.error.includes('QuotaExceededError')) {
+        showNotification('Storage full! Please clear some data.', 'error');
+      } else {
+        showNotification(`Failed to save: ${result.error}`, 'error');
+      }
+    }
+  }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTechStack, selectedTags, customRequirements, generatedPrompt, addPrompt, limitSize, isStorageSupported, showNotification]);
 
   // Load saved prompt
   const loadPrompt = useCallback((prompt) => {
@@ -141,6 +144,38 @@ const PromptBuilder = () => {
     setCustomRequirements(prompt.customRequirements || '');
     showNotification('Prompt loaded successfully!');
   }, [showNotification]);
+
+  // Storage error handlers
+  const handleStorageRetry = useCallback(() => {
+    const result = retryStorage();
+    if (result.success) {
+      showNotification('Storage reconnected successfully!');
+    } else {
+      showNotification(`Storage still unavailable: ${result.error}`, 'error');
+    }
+  }, [retryStorage, showNotification]);
+
+  const handleClearStorage = useCallback(() => {
+    const result = clearStorage();
+    if (result.success) {
+      showNotification('Storage cleared successfully!');
+    } else {
+      showNotification(`Failed to clear storage: ${result.error}`, 'error');
+    }
+  }, [clearStorage, showNotification]);
+
+  // Show storage error handler for critical errors
+  if (isCriticalError) {
+    return (
+      <StorageErrorHandler
+        error={storageError}
+        onRetry={handleStorageRetry}
+        onClearStorage={handleClearStorage}
+        storageKey="saved-prompts"
+        isSupported={isStorageSupported}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -157,6 +192,19 @@ const PromptBuilder = () => {
               </h1>
             </div>
             <div className="flex items-center gap-4">
+              {/* Storage status indicators */}
+              {!isStorageSupported && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded text-xs">
+                  <span>⚠️</span>
+                  <span>No Storage</span>
+                </div>
+              )}
+              {storageError && !isCriticalError && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 rounded text-xs">
+                  <span>🔥</span>
+                  <span>Storage Issue</span>
+                </div>
+              )}
               <button
                 onClick={() => setShowHelp(true)}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -220,14 +268,40 @@ const PromptBuilder = () => {
               onSavePrompt={savePrompt}
             />
 
-            <SavedPrompts 
-              savedPrompts={savedPrompts}
-              onLoadPrompt={loadPrompt}
-              AI_MODELS={AI_MODELS}
-              PROGRAMMING_LANGUAGES={PROGRAMMING_LANGUAGES}
-              CATEGORIES={CATEGORIES}
-              DIFFICULTY_LEVELS={DIFFICULTY_LEVELS}
-            />
+            {/* Show saved prompts only if we have any */}
+            {savedPrompts && savedPrompts.length > 0 && (
+              <SavedPrompts 
+                savedPrompts={savedPrompts}
+                onLoadPrompt={loadPrompt}
+                AI_MODELS={AI_MODELS}
+                PROGRAMMING_LANGUAGES={PROGRAMMING_LANGUAGES}
+                CATEGORIES={CATEGORIES}
+                DIFFICULTY_LEVELS={DIFFICULTY_LEVELS}
+              />
+            )}
+
+            {/* Storage warning for non-critical errors */}
+            {storageError && !isCriticalError && (
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-orange-600 dark:text-orange-400">⚠️</span>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-orange-800 dark:text-orange-200">
+                      Storage Issue Detected
+                    </h3>
+                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                      {storageError}. Your prompts are saved for this session but won't persist.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleStorageRetry}
+                    className="px-3 py-1 bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm hover:bg-orange-200 dark:hover:bg-orange-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -238,9 +312,17 @@ const PromptBuilder = () => {
           <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-fade-in ${
             notification.type === 'error' 
               ? 'bg-red-600 text-white' 
+              : notification.type === 'warning'
+              ? 'bg-yellow-600 text-white'
               : 'bg-green-600 text-white'
           }`}>
-            {notification.type === 'error' ? <X className="w-5 h-5" /> : <Check className="w-5 h-5" />}
+            {notification.type === 'error' ? (
+              <X className="w-5 h-5" />
+            ) : notification.type === 'warning' ? (
+              <span className="text-sm">⚠️</span>
+            ) : (
+              <Check className="w-5 h-5" />
+            )}
             <span className="text-sm font-medium">{notification.message}</span>
           </div>
         </div>

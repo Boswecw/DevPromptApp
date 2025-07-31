@@ -1,4 +1,4 @@
-// src/App.jsx - Updated to use new PromptBuilder component
+// src/App.jsx - CORRECTED
 import React from 'react';
 import { ErrorBoundary, ThemeProvider } from './components';
 import { PromptBuilder } from './components/PromptBuilder';
