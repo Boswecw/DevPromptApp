@@ -1,4 +1,4 @@
-// src/hooks/useTheme.js - FINAL CORRECTED VERSION
+// src/hooks/useTheme.js - FIXED VERSION: Removed duplicate useEffect
 import { useState, useEffect } from 'react';
 
 export function useTheme() {
@@ -92,22 +92,7 @@ export function useTheme() {
     }
   }, []);
 
-  // Apply initial theme on first render to prevent flash
-  useEffect(() => {
-    // Force immediate application on mount to prevent Flash of Unstyled Content
-    const root = document.documentElement;
-    const body = document.body;
-    
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      body.classList.add('dark');
-      root.style.colorScheme = 'dark';
-    } else {
-      root.classList.remove('dark');
-      body.classList.remove('dark'); 
-      root.style.colorScheme = 'light';
-    }
-  }, [theme]); // Include theme as dependency to fix ESLint warning
+  // REMOVED THE DUPLICATE useEffect THAT WAS CAUSING ISSUES
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';

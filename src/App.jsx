@@ -1,13 +1,13 @@
-// src/App.jsx - Fixed with proper imports and structure
+// src/App.jsx - Updated to use new PromptBuilder component
 import React from 'react';
 import { ErrorBoundary, ThemeProvider } from './components';
-import DevPromptApp from './DevPromptApp';
+import { PromptBuilder } from './components/PromptBuilder';
 
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <DevPromptApp />
+        <PromptBuilder />
       </ThemeProvider>
     </ErrorBoundary>
   );
