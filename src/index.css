@@ -1,4 +1,7 @@
-@import "tailwindcss";
+/* Replace the @import "tailwindcss"; with these three lines */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Root variables and theme setup */
 :root {
@@ -52,9 +55,6 @@ a:hover {
 .dark a:hover {
   color: #93c5fd;
 }
-
-/* REMOVE ALL PROBLEMATIC BUTTON OVERRIDES - Let Tailwind handle buttons */
-/* This ensures Tailwind classes work properly */
 
 /* Keep only essential custom selection styles for special cases */
 .selection-purple-active {
