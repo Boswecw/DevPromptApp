@@ -1,19 +1,12 @@
-// tailwind.config.js (ES Module)
+/** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class',
   content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
-    extend: {
-      // ✅ FIXED: Add line-clamp utilities manually since we don't have the plugin
-      // This replaces the need for @tailwindcss/line-clamp plugin
-    },
+    extend: {},
   },
-  plugins: [
-    // ✅ SIMPLIFIED: Removed line-clamp plugin dependency
-    // If you want line-clamp, install: npm install @tailwindcss/line-clamp
-    // Then uncomment: require('@tailwindcss/line-clamp'),
-  ],
-};
+  plugins: [],
+}
