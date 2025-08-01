@@ -4,7 +4,13 @@
   "version": "1.0.0",
   "type": "module",
   "description": "The ultimate AI prompt builder for developers",
-  "keywords": ["pwa", "ai", "prompts", "developers", "productivity"],
+  "keywords": [
+    "pwa",
+    "ai",
+    "prompts",
+    "developers",
+    "productivity"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
