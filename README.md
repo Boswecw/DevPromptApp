@@ -1,3 +1,6 @@
+[![Deploy to GitHub Pages](https://img.shields.io/github/deployments/boswecw/DevPromptApp/github-pages?label=Live%20App)](https://boswecw.github.io/DevPromptApp/)
+
+
 # 🤖 DevPrompt Generator
 
 > **The ultimate AI prompt builder for developers** - Generate perfect, tailored prompts for any coding task across multiple AI models and programming languages.

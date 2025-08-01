@@ -12,7 +12,9 @@ const PROGRAMMING_LANGUAGES = [
   { id: 'rust', name: 'Rust', icon: '🦀', extension: '.rs' },
   { id: 'go', name: 'Go', icon: '🐹', extension: '.go' },
   { id: 'php', name: 'PHP', icon: '🐘', extension: '.php' },
-  { id: 'ruby', name: 'Ruby', icon: '💎', extension: '.rb' }
+  { id: 'ruby', name: 'Ruby', icon: '💎', extension: '.rb' },
+  { id: 'html', name: 'HTML', icon: '🌐', extension: '.html' },      // ✅ Added
+  { id: 'css', name: 'CSS', icon: '🎨', extension: '.css' }          // ✅ Added
 ];
 
 const LanguageSelector = ({ selectedLanguage, onLanguageChange }) => {

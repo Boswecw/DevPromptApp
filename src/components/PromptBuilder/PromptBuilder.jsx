@@ -1,6 +1,6 @@
-// src/components/PromptBuilder/PromptBuilder.jsx - WITH PWA SUPPORT
-import React, { useState, useMemo, useCallback } from 'react';
-import { Code, Settings, Check, X } from 'lucide-react';
+// src/components/PromptBuilder/PromptBuilder.jsx - CLEAN VERSION WITH NEW AI MODELS
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Code, Settings, Check, X, TrendingDown } from 'lucide-react';
 
 // Import hooks
 import { useThemeContext } from '../../hooks/useThemeContext';
@@ -19,14 +19,14 @@ import CustomRequirements from './CustomRequirements';
 import PromptPreview from './PromptPreview';
 import SavedPrompts from './SavedPrompts';
 
-// Import prompt generation logic
-import { generatePrompt } from './promptGenerator';
+// Import prompt generation logic - UPDATED
+import { generatePrompt, recommendModel, calculateCostSavings } from './promptGenerator';
 import { 
   AI_MODELS, 
   PROGRAMMING_LANGUAGES, 
   CATEGORIES, 
   DIFFICULTY_LEVELS, 
-  TECH_STACKS 
+  TECH_STACKS
 } from './constants';
 
 const PromptBuilder = () => {
@@ -34,7 +34,7 @@ const PromptBuilder = () => {
   useThemeContext();
 
   // Prompt builder state
-  const [selectedModel, setSelectedModel] = useState('chatgpt');
+  const [selectedModel, setSelectedModel] = useState('qwen'); // DEFAULT TO COST-EFFECTIVE MODEL
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [selectedCategory, setSelectedCategory] = useState('component');
   const [selectedDifficulty, setSelectedDifficulty] = useState('intermediate');
@@ -59,6 +59,39 @@ const PromptBuilder = () => {
     clearStorage
   } = useArrayStorage('saved-prompts', []);
 
+  // Get current objects for rich data access
+  const languageObj = useMemo(() => 
+    PROGRAMMING_LANGUAGES.find(lang => lang.id === selectedLanguage), 
+    [selectedLanguage]
+  );
+  
+  const categoryObj = useMemo(() => 
+    CATEGORIES.find(cat => cat.id === selectedCategory), 
+    [selectedCategory]
+  );
+
+  const difficultyObj = useMemo(() => 
+    DIFFICULTY_LEVELS.find(diff => diff.id === selectedDifficulty), 
+    [selectedDifficulty]
+  );
+
+  const techStackObj = useMemo(() => 
+    TECH_STACKS.find(stack => stack.id === selectedTechStack), 
+    [selectedTechStack]
+  );
+
+  // Smart model recommendations
+  const recommendedModels = useMemo(() => 
+    recommendModel(selectedCategory, selectedDifficulty, selectedTags, selectedLanguage),
+    [selectedCategory, selectedDifficulty, selectedTags, selectedLanguage]
+  );
+
+  // Cost savings calculation
+  const costSavings = useMemo(() => 
+    calculateCostSavings(selectedModel, 1000),
+    [selectedModel]
+  );
+
   // Show notification helper
   const showNotification = useCallback((message, type = 'success') => {
     setNotification({ message, type });
@@ -74,29 +107,51 @@ const PromptBuilder = () => {
     );
   }, []);
 
-  // Generate prompt using the extracted logic
+  // Generate prompt using the enhanced logic
   const generatedPrompt = useMemo(() => {
     return generatePrompt({
       selectedModel,
-      selectedLanguage,
+      selectedLanguage: languageObj,
       selectedCategory,
-      selectedDifficulty,
-      selectedTechStack,
-      selectedTags,
+      selectedDifficulty: difficultyObj,
+      selectedTechStack: techStackObj,
+      selectedFeatures: selectedTags,
       customRequirements
     });
-  }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTechStack, selectedTags, customRequirements]);
+  }, [selectedModel, languageObj, selectedCategory, difficultyObj, techStackObj, selectedTags, customRequirements]);
 
-  // Copy to clipboard
-  const copyToClipboard = useCallback(async () => {
+  // Copy to clipboard with model-specific notification
+  const copyToClipboard = useCallback(async (modelId = null) => {
     try {
-      await navigator.clipboard.writeText(generatedPrompt);
-      showNotification('Prompt copied to clipboard!');
+      const targetModel = modelId || selectedModel;
+      const modelObj = AI_MODELS.find(m => m.id === targetModel);
+      
+      // Generate prompt for specific model if different from current
+      const promptToCopy = modelId && modelId !== selectedModel 
+        ? generatePrompt({
+            selectedModel: modelId,
+            selectedLanguage: languageObj,
+            selectedCategory,
+            selectedDifficulty: difficultyObj,
+            selectedTechStack: techStackObj,
+            selectedFeatures: selectedTags,
+            customRequirements
+          })
+        : generatedPrompt;
+
+      await navigator.clipboard.writeText(promptToCopy);
+      
+      const modelName = modelObj?.name || 'Selected';
+      const savingsText = costSavings.recommended && costSavings.savings > 50 
+        ? ` (Save ${costSavings.savings}%!)` 
+        : '';
+        
+      showNotification(`${modelName} prompt copied${savingsText}`);
     } catch (error) {
       console.error('Failed to copy:', error);
       showNotification('Failed to copy prompt', 'error');
     }
-  }, [generatedPrompt, showNotification]);
+  }, [selectedModel, languageObj, selectedCategory, difficultyObj, techStackObj, selectedTags, customRequirements, generatedPrompt, costSavings, showNotification]);
 
   // Save current prompt with enhanced error handling
   const savePrompt = useCallback(() => {
@@ -110,18 +165,21 @@ const PromptBuilder = () => {
       tags: selectedTags,
       customRequirements,
       prompt: generatedPrompt,
+      costSavings: costSavings.savings,
       createdAt: new Date().toISOString()
     };
 
-    // Add the new prompt
     const result = addPrompt(newPrompt);
     
     if (result.success) {
-      // Limit to 10 most recent prompts
       limitSize(10);
       
+      const savingsText = parseFloat(costSavings.savings) > 50 
+        ? ` (${costSavings.savings}% cost savings!)` 
+        : '';
+      
       if (isStorageSupported) {
-        showNotification('Prompt saved successfully!');
+        showNotification(`Prompt saved successfully${savingsText}`);
       } else {
         showNotification('Prompt saved to session (won\'t persist)', 'warning');
       }
@@ -132,7 +190,50 @@ const PromptBuilder = () => {
         showNotification(`Failed to save: ${result.error}`, 'error');
       }
     }
-  }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTechStack, selectedTags, customRequirements, generatedPrompt, addPrompt, limitSize, isStorageSupported, showNotification]);
+  }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTechStack, selectedTags, customRequirements, generatedPrompt, costSavings, addPrompt, limitSize, isStorageSupported, showNotification]);
+
+  // Keyboard shortcuts - ENHANCED FOR NEW MODELS
+  useEffect(() => {
+    const handleKeyboard = (e) => {
+      // Prevent if user is typing in input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault();
+            // Focus search if available
+            break;
+          case 'n':
+            e.preventDefault();
+            // Create new prompt
+            break;
+          case 'e':
+            e.preventDefault();
+            // Export prompts
+            break;
+          case 's':
+            e.preventDefault();
+            savePrompt();
+            break;
+        }
+      } else {
+        switch (e.key) {
+          case '1': copyToClipboard('chatgpt'); break;
+          case '2': copyToClipboard('claude'); break;
+          case '3': copyToClipboard('gemini'); break;
+          case '4': copyToClipboard('copilot'); break;
+          case '5': copyToClipboard('deepseek'); break;
+          case '6': copyToClipboard('qwen'); break;
+          case '7': copyToClipboard('perplexity'); break;
+          case '?': setShowHelp(true); break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyboard);
+    return () => document.removeEventListener('keydown', handleKeyboard);
+  }, [copyToClipboard, savePrompt]);
 
   // Load saved prompt
   const loadPrompt = useCallback((prompt) => {
@@ -144,6 +245,17 @@ const PromptBuilder = () => {
     setSelectedTags(prompt.tags);
     setCustomRequirements(prompt.customRequirements || '');
     showNotification('Prompt loaded successfully!');
+  }, [showNotification]);
+
+  // Auto-suggest better model for current selection
+  const handleModelChange = useCallback((newModel) => {
+    setSelectedModel(newModel);
+    
+    // Show cost savings notification for cost-effective models
+    const modelObj = AI_MODELS.find(m => m.id === newModel);
+    if (modelObj?.savings) {
+      showNotification(`Great choice! ${modelObj.name} offers ${modelObj.savings} vs premium models`, 'success');
+    }
   }, [showNotification]);
 
   // Storage error handlers
@@ -194,8 +306,20 @@ const PromptBuilder = () => {
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 DevPrompt Generator
               </h1>
+              {/* Model count badge */}
+              <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">
+                7 AI Models
+              </span>
             </div>
             <div className="flex items-center gap-4">
+              {/* Cost savings indicator */}
+              {parseFloat(costSavings.savings) > 50 && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
+                  <TrendingDown className="w-4 h-4" />
+                  <span>Save {costSavings.savings}%</span>
+                </div>
+              )}
+              
               {/* Storage status indicators */}
               {!isStorageSupported && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded text-xs">
@@ -212,7 +336,7 @@ const PromptBuilder = () => {
               <button
                 onClick={() => setShowHelp(true)}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                title="Help & Tips"
+                title="Help & Tips (Press ?)"
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -228,7 +352,8 @@ const PromptBuilder = () => {
           <div className="lg:col-span-1 space-y-6">
             <ModelSelector 
               selectedModel={selectedModel}
-              onModelChange={setSelectedModel}
+              onModelChange={handleModelChange}
+              recommendedModels={recommendedModels}
             />
             
             <LanguageSelector 
@@ -240,6 +365,38 @@ const PromptBuilder = () => {
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
             />
+
+            {/* Smart recommendations panel */}
+            {recommendedModels.length > 0 && !recommendedModels.includes(selectedModel) && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
+                  💡 Smart Suggestion
+                </h3>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
+                  For {categoryObj?.name || selectedCategory} tasks, consider these models:
+                </p>
+                <div className="space-y-2">
+                  {recommendedModels.slice(0, 2).map(modelId => {
+                    const model = AI_MODELS.find(m => m.id === modelId);
+                    return model ? (
+                      <button
+                        key={modelId}
+                        onClick={() => handleModelChange(modelId)}
+                        className="w-full text-left p-2 bg-blue-100 dark:bg-blue-800/50 hover:bg-blue-200 dark:hover:bg-blue-700/50 rounded text-sm transition-colors"
+                      >
+                        <span className="mr-2">{model.icon}</span>
+                        <span className="font-medium">{model.name}</span>
+                        {model.savings && (
+                          <span className="ml-2 text-xs text-green-600 dark:text-green-400">
+                            ({model.savings})
+                          </span>
+                        )}
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Main Content */}
@@ -270,6 +427,9 @@ const PromptBuilder = () => {
               generatedPrompt={generatedPrompt}
               onCopyPrompt={copyToClipboard}
               onSavePrompt={savePrompt}
+              selectedModel={selectedModel}
+              costSavings={costSavings}
+              aiModels={AI_MODELS}
             />
 
             {/* Show saved prompts only if we have any */}

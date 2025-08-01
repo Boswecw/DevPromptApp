@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "The ultimate AI prompt builder for developers",
+  "homepage": "https://boswecw.github.io/DevPromptApp",
   "keywords": [
     "pwa",
     "ai",
@@ -13,11 +14,12 @@
   ],
   "scripts": {
     "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "pwa-assets": "pwa-assets-generator",
-    "deploy": "yarn build && gh-pages -d dist"
+    "deploy": "echo '✅ Deployment is handled automatically by GitHub Actions (see .github/workflows/deploy.yml)'"
   },
   "dependencies": {
     "lucide-react": "^0.532.0",
