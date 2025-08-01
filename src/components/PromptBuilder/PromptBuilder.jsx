@@ -1,4 +1,4 @@
-// src/components/PromptBuilder/PromptBuilder.jsx - SIMPLIFIED WITH useStorage HOOK
+// src/components/PromptBuilder/PromptBuilder.jsx - WITH PWA SUPPORT
 import React, { useState, useMemo, useCallback } from 'react';
 import { Code, Settings, Check, X } from 'lucide-react';
 
@@ -8,6 +8,7 @@ import { useArrayStorage } from '../../hooks/useStorage';
 
 // Import components
 import { HelpModal, ThemeToggle, StorageErrorHandler } from '../index';
+import PWAInstall from '../PWAInstall';
 import ModelSelector from './ModelSelector';
 import LanguageSelector from './LanguageSelector';
 import CategorySelector from './CategorySelector';
@@ -179,6 +180,9 @@ const PromptBuilder = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* PWA Install Component */}
+      <PWAInstall />
+
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
