@@ -1,9 +1,12 @@
+// vite.config.js - GitHub Pages Configuration
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vitejs.dev/config/
 export default defineConfig({
+  // IMPORTANT: Set base path for GitHub Pages
+  base: '/your-repo-name/',  // Replace with your actual repo name
+  
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +20,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/your-repo-name/',      // Match base path
+        start_url: '/your-repo-name/',  // Match base path
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -39,7 +42,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        navigateFallback: '/your-repo-name/index.html',  // Important for SPA routing
       }
     })
   ],
