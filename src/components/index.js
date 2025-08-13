@@ -1,32 +1,21 @@
-// src/components/index.js - Fixed exports
-// Error handling components
+// src/components/index.js - keep this focused on app-level components
+
+// Error handling
 export { default as ErrorBoundary } from './ErrorBoundary';
 
-// Theme components
+// Theme
 export { default as ThemeProvider } from './ThemeProvider';
 export { default as ThemeToggle } from './ThemeToggle';
 
-// Help component
+// Help
 export { default as HelpModal } from './HelpModal';
 
-// Loading components
+// Loading
 export { default as LoadingSpinner, InlineSpinner, LoadingOverlay } from './LoadingSpinner';
-
-// Skeleton components
-export { 
-  default as SkeletonElement,
-  PromptCardSkeleton,
-  SearchBarSkeleton,
-  CategoryFilterSkeleton,
-  AnalyticsCardSkeleton,
-  PageSkeleton,
-  TableRowSkeleton,
-  ListItemSkeleton
-} from './SkeletonComponents';
 
 // Storage error handler
 export { default as StorageErrorHandler } from './StorageErrorHandler';
 
-// Export hooks and contexts from their proper locations
+// Hooks/contexts passthroughs
 export { useThemeContext } from '../hooks/useThemeContext';
 export { ThemeContext } from '../contexts/ThemeContext';

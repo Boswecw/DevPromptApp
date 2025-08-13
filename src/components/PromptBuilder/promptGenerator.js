@@ -1,327 +1,230 @@
 // src/components/PromptBuilder/promptGenerator.js
-// Enhanced prompt generator with new AI models
 
-import { MODEL_CAPABILITIES } from './constants.js';
+import {
+  AI_MODELS,
+  PROGRAMMING_LANGUAGES,
+  CATEGORIES,
+  DIFFICULTY_LEVELS,
+  TECH_STACKS
+} from './constants';
 
-export const generatePrompt = (config) => {
-  const {
-    selectedModel,
-    selectedLanguage,
-    selectedCategory,
-    selectedDifficulty,
-    selectedTechStack,
-    selectedFeatures,
-    customRequirements
-  } = config;
+export const generatePrompt = ({
+  selectedModel,
+  selectedLanguage,
+  selectedCategory,
+  selectedDifficulty,
+  selectedTechStack,
+  selectedTags,
+  customRequirements
+}) => {
+  const model = AI_MODELS.find(m => m.id === selectedModel);
+  const language = PROGRAMMING_LANGUAGES.find(l => l.id === selectedLanguage);
+  const category = CATEGORIES.find(c => c.id === selectedCategory);
+  const difficulty = DIFFICULTY_LEVELS.find(d => d.id === selectedDifficulty);
+  const techStack = TECH_STACKS.find(s => s.id === selectedTechStack);
 
-  const language = selectedLanguage;
-  const difficulty = selectedDifficulty;
-  const techStack = selectedTechStack;
-  const features = selectedFeatures || [];
-  const customContext = customRequirements ? `\n\n**Additional Requirements:**\n${customRequirements}` : '';
-  
-  // Tech stack context
-  const stackContext = techStack.id !== 'none' ? 
-    `\n\n**Tech Stack Context:**\n- Frontend: ${techStack.frontend}\n- Backend: ${techStack.backend}\n- Database: ${techStack.database}\n- Features: ${techStack.features}` : '';
+  if (!model || !language || !category || !difficulty || !techStack) {
+    return 'Please select all required options to generate a prompt.';
+  }
 
-  // Features context
-  const featuresContext = features.length > 0 ? 
-    `\n\n**Required Features:** ${features.join(', ')}` : '';
+  const safeTags = Array.isArray(selectedTags) ? selectedTags : [];
+  const tagsLine =
+    safeTags.length > 0 ? safeTags.join(', ').toLowerCase() : 'no additional features';
 
-  // Language-specific considerations
-  const isMarkupLanguage = ['html', 'css'].includes(language.id);
-  const languageContext = isMarkupLanguage ? 
-    `\n\n**${language.name} Specific Requirements:**${
-      language.id === 'html'
-        ? '\n- Semantic HTML5 elements and proper document structure' +
-          '\n- Accessibility attributes (ARIA labels, alt text, proper headings)' +
-          '\n- SEO-friendly markup and meta tags' +
-          '\n- Cross-browser compatibility considerations'
-        : language.id === 'css'
-        ? '\n- Modern CSS features (Grid, Flexbox, Custom Properties)' +
-          '\n- Responsive design with mobile-first approach' +
-          '\n- Performance optimization (efficient selectors, minimal reflow)' +
-          '\n- Browser compatibility and vendor prefixes where needed'
-        : ''
-    }` : '';
+  const stackContext = techStack.id !== 'none'
+    ? `
+**Tech Stack Context:**
+- Frontend: ${techStack.frontend}
+- Backend: ${techStack.backend}
+- Deployment: ${techStack.deployment}
+${techStack.edge ? `- Edge Computing: ${techStack.edge}` : ''}
+- Architecture: ${techStack.description}
+`
+    : '';
 
-  // Base prompt templates for each category
+  const customContext = customRequirements
+    ? `
+**Additional Requirements:**
+${customRequirements}
+`
+    : '';
+
   const promptTemplates = {
-    component: `Create a ${difficulty.name.toLowerCase()}-level ${language.name} ${selectedCategory} that demonstrates modern development practices.
+    component: `Create a ${language.name} component with:
+- ${difficulty.name} level functionality
+- Features: ${tagsLine}
+- Modern ${language.name} component patterns
+${stackContext}${customContext}
 
-The ${selectedCategory} should be:
-- Well-structured and maintainable
-- Include proper error handling and validation
-- Follow ${language.name} best practices and conventions
-- Include comprehensive comments explaining the logic
-- Be production-ready and scalable
+Deliver:
+- Complete component code
+- Styling (CSS/styled-components)
+- Props interface/type definitions
+- Usage examples
+- Accessibility considerations
+${techStack.id !== 'none' ? `- Integration with ${techStack.frontend} patterns and animations` : ''}
+${techStack.id === 'chucks-power-stack' ? '- Advanced animations with Framer Motion and potential client-side AI features' : ''}`,
 
-${difficulty.name === 'Beginner' ? 'Focus on clear, simple code with extensive explanations.' : ''}
-${difficulty.name === 'Intermediate' ? 'Include moderate complexity with best practices and optimization.' : ''}
-${difficulty.name === 'Advanced' ? 'Implement advanced patterns, performance optimizations, and enterprise-grade features.' : ''}
+    function: `Build a ${language.name} function that:
+- ${difficulty.name} complexity level
+- Incorporates: ${tagsLine}
+- Follows ${language.name} best practices
+${stackContext}${customContext}
 
-${stackContext}${featuresContext}${languageContext}${customContext}`,
+Requirements:
+- Well-documented with JSDoc/docstrings
+- Include error handling
+- Provide usage examples
+- Optimize for readability and performance
+${techStack.id !== 'none' ? `- Consider integration with ${techStack.name} architecture` : ''}`,
 
-    function: `Develop a ${difficulty.name.toLowerCase()}-level ${language.name} function with the following specifications:
+    class: `Design a ${language.name} class with:
+- ${difficulty.name} level architecture
+- Incorporates: ${tagsLine}
+- Follows OOP principles for ${language.name}
+${stackContext}${customContext}
 
-**Requirements:**
-- Pure function design with predictable inputs/outputs
-- Comprehensive error handling and edge case management
-- Type safety (if applicable to ${language.name})
-- Unit test examples and usage documentation
-- Performance considerations and optimization notes
+Include:
+- Constructor with proper parameter validation
+- Public and private methods
+- Properties with appropriate access modifiers
+- Documentation for all public members
+- Usage example with instantiation
+${techStack.id !== 'none' ? `- Integration patterns for ${techStack.name} stack` : ''}`,
 
-${difficulty.name === 'Advanced' ? '- Advanced algorithmic optimization and memory efficiency\n- Concurrent/parallel processing capabilities where applicable' : ''}
+    api: `Create a ${language.name} ${category.name.toLowerCase()} featuring:
+- ${difficulty.name} level implementation
+- Includes: ${tagsLine}
+- RESTful design principles
+${stackContext}${customContext}
 
-${stackContext}${featuresContext}${customContext}`,
+Provide:
+- Complete endpoint implementation
+- Request/response schemas
+- Error handling middleware
+- Authentication/authorization if needed
+- API documentation
+${techStack.id !== 'none' ? `- Deployment configuration for ${techStack.deployment}` : ''}`,
 
-    api: `Design and implement a ${difficulty.name.toLowerCase()}-level ${language.name} API endpoint with:
+    database: `Build a ${language.name} database integration that:
+- ${difficulty.name} level complexity
+- Implements: ${tagsLine}
+- Uses modern ${language.name} database libraries
+${stackContext}${customContext}
 
-**Core Features:**
-- RESTful design principles and proper HTTP methods
-- Input validation and sanitization
-- Authentication and authorization handling
-- Comprehensive error responses with proper status codes
-- Rate limiting and security best practices
-- API documentation and example requests/responses
+Include:
+- Connection management
+- Query builders or ORM usage
+- Migration scripts
+- Error handling and logging
+- Performance optimizations
+${techStack.id !== 'none' ? `- Integration with ${techStack.backend} backend patterns` : ''}
+${techStack.id === 'chucks-power-stack' ? '- Consider AI/ML integration patterns and edge computing optimization' : ''}`,
 
-${difficulty.name === 'Advanced' ? '- Implement caching strategies and performance monitoring\n- Database optimization and connection pooling\n- Microservices architecture considerations' : ''}
+    test: `Generate ${language.name} test suite with:
+- ${difficulty.name} level test coverage
+- Incorporates: ${tagsLine}
+- Uses popular ${language.name} testing frameworks
+${stackContext}${customContext}
 
-${stackContext}${featuresContext}${customContext}`,
+Provide:
+- Unit tests with multiple scenarios
+- Integration tests if applicable
+- Mock data and fixtures
+- Test utilities and helpers
+- Coverage configuration
+${techStack.id !== 'none' ? `- E2E testing setup for ${techStack.name} stack` : ''}`,
 
-    database: `Create a ${difficulty.name.toLowerCase()}-level ${language.name} database solution including:
+    algorithm: `Implement a ${language.name} algorithm that:
+- ${difficulty.name} complexity level
+- Optimized for: ${tagsLine}
+- Follows ${language.name} performance best practices
+${stackContext}${customContext}
 
-**Database Design:**
-- Normalized schema design with proper relationships
-- Efficient indexing strategy
-- Data validation and constraints
-- Migration scripts and version control
-- Query optimization and performance tuning
-- Backup and recovery procedures
+Include:
+- Time and space complexity analysis
+- Multiple solution approaches
+- Edge case handling
+- Performance benchmarks
+- Clear step-by-step comments
+${techStack.id !== 'none' ? `- Optimization considerations for ${techStack.name} environment` : ''}
+${techStack.id === 'chucks-power-stack' ? '- AI-first optimization and potential WASM/Rust integration for performance-critical parts' : ''}`,
 
-${difficulty.name === 'Advanced' ? '- Horizontal scaling strategies\n- Data partitioning and sharding\n- Performance monitoring and analytics' : ''}
+    ui: `Create a ${language.name} UI component with:
+- ${difficulty.name} level functionality
+- Features: ${tagsLine}
+- Modern ${language.name} UI patterns
+${stackContext}${customContext}
 
-${stackContext}${featuresContext}${customContext}`,
+Deliver:
+- Complete component code
+- Styling (CSS/styled-components)
+- Props interface/type definitions
+- Usage examples
+- Accessibility considerations
+${techStack.id !== 'none' ? `- Integration with ${techStack.frontend} patterns and animations` : ''}
+${techStack.id === 'chucks-power-stack' ? '- Advanced animations with Framer Motion and potential client-side AI features' : ''}`,
 
-    test: `Develop a comprehensive ${difficulty.name.toLowerCase()}-level test suite for ${language.name}:
+    accessibility: `Create a fully accessible ${language.name} implementation with ${difficulty.name} level complexity that includes:
 
-**Testing Strategy:**
-- Unit tests with high code coverage
-- Integration tests for system interactions
-- End-to-end testing scenarios
-- Mock and stub implementations
-- Test data management and cleanup
-- Continuous integration compatibility
+🛠️ **WCAG 2.1 AA Compliance:**
+- Follow WCAG 2.1 guidelines, specifically Level AA requirements
+- Ensure all interactive elements are accessible via keyboard and screen readers
+- Implement proper focus management and visual focus indicators
+- Include ${tagsLine} where applicable
 
-${difficulty.name === 'Advanced' ? '- Performance and load testing\n- Security testing and vulnerability assessment\n- Contract testing for APIs' : ''}
+🌐 **Semantic HTML & Structure:**
+- Use semantic HTML5 elements (header, nav, main, section, article, aside, footer)
+- Implement proper heading hierarchy (h1-h6) with logical document outline
+- Use appropriate HTML form elements with labels and fieldsets
+- Include landmark roles where semantic elements aren't sufficient
 
-${stackContext}${featuresContext}${customContext}`,
+🎨 **Visual & Color Accessibility:**
+- Ensure minimum 4.5:1 color contrast for normal text
+- Provide alternative text for all images and icons
+- Design for colorblind users (don't rely solely on color)
+- Support high contrast and reduced motion preferences
 
-    algorithm: `Implement a ${difficulty.name.toLowerCase()}-level ${language.name} algorithm with:
+⌨️ **Keyboard & Screen Reader Support:**
+- Full keyboard navigation with logical tab order
+- Proper ARIA labels, descriptions, and live regions
+- Screen reader announcements for dynamic content
+- Skip links and focus management for single-page applications
 
-**Algorithm Requirements:**
-- Optimal time and space complexity
-- Clear mathematical explanation of the approach
-- Step-by-step implementation with comments
-- Multiple test cases with expected outputs
-- Performance analysis and Big O notation
-- Alternative approaches and trade-offs discussion
+${stackContext}${customContext}
 
-${difficulty.name === 'Advanced' ? '- Parallel processing optimizations\n- Memory-efficient implementations\n- Real-world scalability considerations' : ''}
-
-${stackContext}${featuresContext}${customContext}`,
-
-    ui: `Design and develop a ${difficulty.name.toLowerCase()}-level ${language.name} UI/UX ${isMarkupLanguage ? 'implementation' : 'component'}:
-
-**Design Requirements:**
-- Modern, responsive design that works across devices
-- ${language.id === 'html' ? 'Semantic HTML5 structure with proper accessibility' : language.id === 'css' ? 'Advanced CSS techniques (Grid, Flexbox, Animations)' : 'Consistent styling and design system integration'}
-- Interactive elements with smooth animations
-- Loading states and error handling UX
-- Accessibility compliance (WCAG 2.1)
-- Performance optimization for smooth interactions
-- ${language.id === 'css' ? 'CSS-only solutions where possible (no JavaScript dependencies)' : 'Cross-browser compatibility and progressive enhancement'}
-
-${difficulty.name === 'Advanced' ? '- Advanced animations and micro-interactions\n- State management and data flow optimization\n- Progressive enhancement and graceful degradation' : ''}
-
-${stackContext}${featuresContext}${languageContext}${customContext}`,
-
-    class: `Create a ${difficulty.name.toLowerCase()}-level ${language.name} class implementation:
-
-**Class Design:**
-- Object-oriented principles (encapsulation, inheritance, polymorphism)
-- Clear interface and public/private methods
-- Constructor validation and initialization
-- Error handling and exception management
-- Documentation and usage examples
-- Thread safety considerations (if applicable)
-
-${difficulty.name === 'Advanced' ? '- Design patterns implementation\n- Memory management and resource cleanup\n- Performance optimization and caching' : ''}
-
-${stackContext}${featuresContext}${customContext}`,
-
-    accessibility: `Develop a ${difficulty.name.toLowerCase()}-level ${language.name} accessibility-focused implementation:
-
-**Accessibility Requirements:**
-- WCAG 2.1 AA compliance
-- Semantic HTML and proper ARIA attributes
-- Keyboard navigation and focus management
-- Screen reader compatibility and announcements
-- Color contrast and visual accessibility
-- Responsive design for various devices and orientations
-
-${difficulty.name === 'Advanced' ? '- Advanced ARIA patterns and complex widgets\n- Performance optimization for assistive technologies\n- Automated accessibility testing integration' : ''}
-
-${stackContext}${featuresContext}${customContext}`
+**Implementation Requirements:**
+- Complete working code with accessibility features
+- Testing instructions for screen readers and keyboard navigation
+- Documentation of accessibility features implemented
+- Performance considerations for assistive technologies
+${techStack.id !== 'none' ? `- Integration with ${techStack.frontend} accessibility tools and libraries` : ''}
+${techStack.id === 'chucks-power-stack' ? '- AI-powered accessibility enhancements and edge-optimized assistive technology support' : ''}`
   };
 
   let basePrompt = promptTemplates[selectedCategory] || promptTemplates.component;
 
-  // Model-specific enhancements
   switch (selectedModel) {
-    case 'deepseek':
-      basePrompt = `**DeepSeek R1 - Advanced Reasoning Mode**
-
-${basePrompt}
-
-**Reasoning Requirements:**
-- Show mathematical/logical reasoning steps
-- Explain algorithmic complexity and optimization decisions
-- Provide multiple solution approaches with trade-off analysis
-- Include performance benchmarks and complexity analysis
-- Demonstrate advanced problem-solving techniques
-
-**Focus Areas:** Mathematical precision, logical flow, optimization strategies`;
-      break;
-
-    case 'qwen':
-      basePrompt = `**Qwen 2.5 Max - Coding Excellence Mode**
-
-${basePrompt}
-
-**Coding Excellence Standards:**
-- Production-ready code with enterprise-grade quality
-- Multi-language best practices and conventions
-- Advanced error handling and edge case management
-- Performance optimization and scalability considerations
-- Comprehensive testing and documentation
-
-**Optimization Focus:** Code quality, performance, maintainability, scalability`;
-      break;
-
-    case 'perplexity':
-      basePrompt = `**Perplexity Pro - Research-Enhanced Mode**
-
-${basePrompt}
-
-**Research Requirements:**
-- Include current best practices and industry standards
-- Reference recent documentation and official guidelines
-- Provide links to relevant resources and documentation
-- Compare different approaches with pros/cons
-- Include real-world examples and case studies
-- Cite authoritative sources and official documentation
-
-**Research Focus:** Current trends, best practices, authoritative sources, practical examples`;
-      break;
-
     case 'claude':
-      basePrompt = basePrompt.replace('Create a', 'I need you to help me create a')
+      basePrompt = basePrompt
+        .replace('Create a', 'I need you to help me create a')
         .replace('Build a', 'Please help me build a')
-        .replace('Design a', 'Let\'s work together to design a')
-        .replace('Develop a', 'Please assist me in developing a');
-      basePrompt += `\n\n**Claude Enhancement:** Focus on clean architecture, maintainable code structure, and detailed explanations of design decisions.`;
+        .replace('Design a', "Let's work together to design a");
       break;
-
     case 'gemini':
       basePrompt = `**Context:** I'm working on a ${language.name} project and need your creative input.
 
 ${basePrompt}
 
-**Creative Enhancement:** Please suggest innovative approaches, modern patterns, and creative solutions where possible. Include alternative implementations and explain the reasoning behind design choices.`;
+**Additional Context:** Please be creative and suggest innovative approaches where possible.`;
       break;
-
     case 'copilot':
       basePrompt = `// ${language.name} ${selectedCategory} request
-
 ${basePrompt}
 
-**GitHub Copilot Enhancement:** Please provide inline comments, suggest VS Code extensions that might be helpful, and include practical implementation examples with code snippets.`;
+Please provide inline comments and suggest VS Code extensions that might be helpful.`;
       break;
-
-    default:
-      // Default ChatGPT behavior
-      basePrompt += `\n\n**Standard Mode:** Provide comprehensive explanations with step-by-step implementation details and best practices.`;
-  }
-
-  // Add model-specific optimization suggestions
-  if (MODEL_CAPABILITIES[selectedModel]) {
-    const capabilities = MODEL_CAPABILITIES[selectedModel];
-    if (capabilities.bestFor.includes(selectedCategory)) {
-      basePrompt += `\n\n**Model Optimization:** This prompt is optimized for ${selectedModel.toUpperCase()}, which excels at ${capabilities.strengths.join(', ')}. Expected superior results for this task type.`;
-    }
   }
 
   return basePrompt;
-};
-
-// Smart model recommendation based on category and requirements
-export const recommendModel = (category, difficulty, features = [], languageId = '') => {
-  const recommendations = {
-    algorithm: ['deepseek', 'qwen'],
-    function: ['deepseek', 'qwen'],
-    class: ['qwen', 'claude'],
-    api: ['qwen', 'claude'],
-    database: ['qwen', 'deepseek'],
-    component: ['qwen', 'claude'],
-    ui: ['claude', 'gemini', 'qwen'], // Enhanced for HTML/CSS
-    test: ['qwen', 'deepseek'],
-    accessibility: ['claude', 'chatgpt']
-  };
-
-  // HTML/CSS specific recommendations
-  if (['html', 'css'].includes(languageId)) {
-    if (category === 'ui' || category === 'component') {
-      return ['claude', 'qwen', 'gemini']; // Best for markup and styling
-    }
-    if (category === 'accessibility') {
-      return ['claude', 'perplexity', 'chatgpt']; // Best for accessibility research
-    }
-  }
-
-  // Research-heavy tasks
-  if (features.includes('Documentation') || difficulty === 'advanced') {
-    return ['perplexity', ...(recommendations[category] || ['qwen'])];
-  }
-
-  // Cost-sensitive recommendations
-  if (features.includes('Performance') || features.includes('Scalable')) {
-    return ['qwen', 'deepseek'];
-  }
-
-  return recommendations[category] || ['qwen', 'deepseek', 'claude'];
-};
-
-// Cost calculator for API usage
-export const calculateCostSavings = (selectedModel, tokensUsed = 1000) => {
-  const baseCost = {
-    chatgpt: 0.03,      // $0.03 per 1K tokens (GPT-4)
-    claude: 0.025,      // $0.025 per 1K tokens (Claude Sonnet)
-    gemini: 0.02,       // $0.02 per 1K tokens
-    copilot: 0.02,      // $0.02 per 1K tokens
-    deepseek: 0.003,    // $0.003 per 1K tokens (90% savings)
-    qwen: 0.0025,       // $0.0025 per 1K tokens (90% savings)
-    perplexity: 0.015   // $0.015 per 1K tokens
-  };
-
-  const currentCost = (baseCost[selectedModel] || baseCost.chatgpt) * (tokensUsed / 1000);
-  const gpt4Cost = baseCost.chatgpt * (tokensUsed / 1000);
-  const savings = ((gpt4Cost - currentCost) / gpt4Cost) * 100;
-
-  return {
-    currentCost: currentCost.toFixed(4),
-    gpt4Cost: gpt4Cost.toFixed(4),
-    savings: Math.max(0, savings).toFixed(1),
-    recommended: savings > 50
-  };
 };
