@@ -1,59 +1,57 @@
-// src/components/PromptBuilder/PromptBuilder.jsx - CLEAN VERSION WITH NEW AI MODELS + working "Switch to Custom"
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Code, Settings, Check, X, TrendingDown } from 'lucide-react';
+// src/components/PromptBuilder/PromptBuilder.jsx (UPDATED PAGE)
+import React, { useState, useMemo, useCallback } from 'react';
+import { 
+  Code, Settings, Check, X, Copy, Save, History, Eye, EyeOff, Menu 
+} from 'lucide-react';
 
-// Import hooks
+// Hooks
 import { useThemeContext } from '../../hooks/useThemeContext';
 import { useArrayStorage } from '../../hooks/useStorage';
 
-// Import components
+// Shared components
 import { HelpModal, ThemeToggle, StorageErrorHandler } from '../index';
-// If you have this component, keep it; otherwise remove the next line.
-// import PWAInstall from '../PWAInstall';
+
+// Prompt Builder modules
 import ModelSelector from './ModelSelector';
 import LanguageSelector from './LanguageSelector';
-import CategorySelector from './CategorySelector';
 import DifficultySelector from './DifficultySelector';
+import CategorySelector from './CategorySelector';
 import TechStackSelector from './TechStackSelector';
 import FeatureTagsSelector from './FeatureTagsSelector';
 import CustomRequirements from './CustomRequirements';
-import PromptPreview from './PromptPreview';
 import SavedPrompts from './SavedPrompts';
 
-// Import prompt generation logic - UPDATED
-import { generatePrompt, recommendModel, calculateCostSavings } from './promptGenerator';
-import { 
-  AI_MODELS, 
-  PROGRAMMING_LANGUAGES, 
-  CATEGORIES, 
-  DIFFICULTY_LEVELS, 
-  TECH_STACKS
+// Logic & constants
+import { generatePrompt } from './promptGenerator';
+import {
+  AI_MODELS,
+  PROGRAMMING_LANGUAGES,
+  CATEGORIES,
+  DIFFICULTY_LEVELS,
+  TECH_STACKS,
 } from './constants';
 
-const PromptBuilder = ({ onSwitchMode }) => {
-  // Persist we're on standard/guided mode when this mounts
-  useEffect(() => {
-    localStorage.setItem('devprompt-last-mode', 'standard');
-  }, []);
-
-  // Connect to theme context
+const PromptBuilder = () => {
+  // Theme (activates provider side effects like <html class="dark">)
   useThemeContext();
 
-  // Prompt builder state
-  const [selectedModel, setSelectedModel] = useState('qwen'); // DEFAULT TO COST-EFFECTIVE MODEL
+  // Core state
+  const [selectedModel, setSelectedModel] = useState('chatgpt');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [selectedCategory, setSelectedCategory] = useState('component');
   const [selectedDifficulty, setSelectedDifficulty] = useState('intermediate');
   const [selectedTechStack, setSelectedTechStack] = useState('none');
   const [selectedTags, setSelectedTags] = useState(['TypeSafe', 'Error Handling']);
   const [customRequirements, setCustomRequirements] = useState('');
-  
+
   // UI state
-  const [showPreview, setShowPreview] = useState(true);
+  const [showPrompt, setShowPrompt] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showMobileControls, setShowMobileControls] = useState(false);
   const [notification, setNotification] = useState(null);
-  
-  // Storage management with the custom hook
+
+  // Storage
   const {
     value: savedPrompts,
     addItem: addPrompt,
@@ -62,104 +60,51 @@ const PromptBuilder = ({ onSwitchMode }) => {
     error: storageError,
     isCriticalError,
     retry: retryStorage,
-    clearStorage
+    clearStorage,
   } = useArrayStorage('saved-prompts', []);
 
-  // Get current objects for rich data access
-  const languageObj = useMemo(() => 
-    PROGRAMMING_LANGUAGES.find(lang => lang.id === selectedLanguage), 
-    [selectedLanguage]
-  );
-  
-  const categoryObj = useMemo(() => 
-    CATEGORIES.find(cat => cat.id === selectedCategory), 
-    [selectedCategory]
-  );
-
-  const difficultyObj = useMemo(() => 
-    DIFFICULTY_LEVELS.find(diff => diff.id === selectedDifficulty), 
-    [selectedDifficulty]
-  );
-
-  const techStackObj = useMemo(() => 
-    TECH_STACKS.find(stack => stack.id === selectedTechStack), 
-    [selectedTechStack]
-  );
-
-  // Smart model recommendations
-  const recommendedModels = useMemo(() => 
-    recommendModel(selectedCategory, selectedDifficulty, selectedTags, selectedLanguage),
-    [selectedCategory, selectedDifficulty, selectedTags, selectedLanguage]
-  );
-
-  // Cost savings calculation
-  const costSavings = useMemo(() => 
-    calculateCostSavings(selectedModel, 1000),
-    [selectedModel]
-  );
-
-  // Show notification helper
   const showNotification = useCallback((message, type = 'success') => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    const t = setTimeout(() => setNotification(null), 3000);
+    return () => clearTimeout(t);
   }, []);
 
-  // Toggle feature tags (⚠️ keep original prop shapes)
   const toggleTag = useCallback((tag) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   }, []);
 
-  // Generate prompt using the enhanced logic (guard against undefineds)
   const generatedPrompt = useMemo(() => {
     return generatePrompt({
       selectedModel,
-      selectedLanguage: languageObj?.id || selectedLanguage,
+      selectedLanguage,
       selectedCategory,
-      selectedDifficulty: difficultyObj?.id || selectedDifficulty,
-      selectedTechStack: techStackObj?.id || selectedTechStack,
-      selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
-      customRequirements: customRequirements || ''
+      selectedDifficulty,
+      selectedTechStack,
+      selectedTags,
+      customRequirements,
     });
-  }, [selectedModel, languageObj, selectedCategory, difficultyObj, techStackObj, selectedTags, customRequirements, selectedLanguage, selectedDifficulty, selectedTechStack]);
+  }, [
+    selectedModel,
+    selectedLanguage,
+    selectedCategory,
+    selectedDifficulty,
+    selectedTechStack,
+    selectedTags,
+    customRequirements,
+  ]);
 
-  // Copy to clipboard with model-specific notification
-  const copyToClipboard = useCallback(async (modelId = null) => {
+  const copyToClipboard = useCallback(async () => {
     try {
-      const targetModel = modelId || selectedModel;
-      const modelObj = AI_MODELS.find(m => m.id === targetModel);
-      
-      // Generate prompt for specific model if different from current
-      const promptToCopy = modelId && modelId !== selectedModel 
-        ? generatePrompt({
-            selectedModel: modelId,
-            selectedLanguage: languageObj?.id || selectedLanguage,
-            selectedCategory,
-            selectedDifficulty: difficultyObj?.id || selectedDifficulty,
-            selectedTechStack: techStackObj?.id || selectedTechStack,
-            selectedTags: Array.isArray(selectedTags) ? selectedTags : [],
-            customRequirements: customRequirements || ''
-          })
-        : generatedPrompt;
-
-      await navigator.clipboard.writeText(promptToCopy);
-      
-      const modelName = modelObj?.name || 'Selected';
-      const savingsText = costSavings.recommended && costSavings.savings > 50 
-        ? ` (Save ${costSavings.savings}%!)` 
-        : '';
-        
-      showNotification(`${modelName} prompt copied${savingsText}`);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+      await navigator.clipboard.writeText(generatedPrompt);
+      showNotification('Prompt copied to clipboard!');
+    } catch (err) {
+      console.error(err);
       showNotification('Failed to copy prompt', 'error');
     }
-  }, [selectedModel, languageObj, selectedCategory, difficultyObj, techStackObj, selectedTags, customRequirements, generatedPrompt, costSavings, showNotification, selectedLanguage, selectedDifficulty, selectedTechStack]);
+  }, [generatedPrompt, showNotification]);
 
-  // Save current prompt with enhanced error handling
   const savePrompt = useCallback(() => {
     const newPrompt = {
       id: Date.now(),
@@ -168,102 +113,69 @@ const PromptBuilder = ({ onSwitchMode }) => {
       category: selectedCategory,
       difficulty: selectedDifficulty,
       techStack: selectedTechStack,
-      tags: Array.isArray(selectedTags) ? selectedTags : [],
-      customRequirements: customRequirements || '',
+      tags: selectedTags,
+      customRequirements,
       prompt: generatedPrompt,
-      costSavings: costSavings.savings,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const result = addPrompt(newPrompt);
-    
+
     if (result.success) {
       limitSize(10);
-      
-      const savingsText = parseFloat(costSavings.savings) > 50 
-        ? ` (${costSavings.savings}% cost savings!)` 
-        : '';
-      
-      if (isStorageSupported) {
-        showNotification(`Prompt saved successfully${savingsText}`);
-      } else {
-        showNotification('Prompt saved to session (won\'t persist)', 'warning');
-      }
+      isStorageSupported
+        ? showNotification('Prompt saved successfully!')
+        : showNotification("Prompt saved to session (won't persist)", 'warning');
     } else {
-      if (String(result.error || '').includes('QuotaExceededError')) {
-        showNotification('Storage full! Please clear some data.', 'error');
-      } else {
-        showNotification(`Failed to save: ${result.error}`, 'error');
-      }
+      result.error?.includes('QuotaExceededError')
+        ? showNotification('Storage full! Please clear some data.', 'error')
+        : showNotification(`Failed to save: ${result.error}`, 'error');
     }
-  }, [selectedModel, selectedLanguage, selectedCategory, selectedDifficulty, selectedTechStack, selectedTags, customRequirements, generatedPrompt, costSavings, addPrompt, limitSize, isStorageSupported, showNotification]);
+  }, [
+    selectedModel,
+    selectedLanguage,
+    selectedCategory,
+    selectedDifficulty,
+    selectedTechStack,
+    selectedTags,
+    customRequirements,
+    generatedPrompt,
+    addPrompt,
+    limitSize,
+    isStorageSupported,
+    showNotification,
+  ]);
 
-  // Keyboard shortcuts - ENHANCED FOR NEW MODELS
-  useEffect(() => {
-    const handleKeyboard = (e) => {
-      // Prevent if user is typing in input/textarea
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 's':
-            e.preventDefault();
-            savePrompt();
-            break;
-        }
-      } else {
-        switch (e.key) {
-          case '?': setShowHelp(true); break;
-        }
-      }
-    };
+  const loadPrompt = useCallback(
+    (p) => {
+      setSelectedModel(p.model);
+      setSelectedLanguage(p.language);
+      setSelectedCategory(p.category);
+      setSelectedDifficulty(p.difficulty);
+      setSelectedTechStack(p.techStack);
+      setSelectedTags(p.tags);
+      setCustomRequirements(p.customRequirements || '');
+      showNotification('Prompt loaded successfully!');
+      setShowHistory(false);
+      setShowMobileControls(false);
+    },
+    [showNotification]
+  );
 
-    document.addEventListener('keydown', handleKeyboard);
-    return () => document.removeEventListener('keydown', handleKeyboard);
-  }, [savePrompt]);
-
-  // Load saved prompt
-  const loadPrompt = useCallback((prompt) => {
-    setSelectedModel(prompt.model);
-    setSelectedLanguage(prompt.language);
-    setSelectedCategory(prompt.category);
-    setSelectedDifficulty(prompt.difficulty);
-    setSelectedTechStack(prompt.techStack);
-    setSelectedTags(Array.isArray(prompt.tags) ? prompt.tags : []);
-    setCustomRequirements(prompt.customRequirements || '');
-    showNotification('Prompt loaded successfully!');
-  }, [showNotification]);
-
-  // Auto-suggest better model for current selection
-  const handleModelChange = useCallback((newModel) => {
-    setSelectedModel(newModel);
-    
-    const modelObj = AI_MODELS.find(m => m.id === newModel);
-    if (modelObj?.savings) {
-      showNotification(`Great choice! ${modelObj.name} offers ${modelObj.savings} vs premium models`, 'success');
-    }
-  }, [showNotification]);
-
-  // Storage error handlers
   const handleStorageRetry = useCallback(() => {
     const result = retryStorage();
-    if (result.success) {
-      showNotification('Storage reconnected successfully!');
-    } else {
-      showNotification(`Storage still unavailable: ${result.error}`, 'error');
-    }
+    result.success
+      ? showNotification('Storage reconnected successfully!')
+      : showNotification(`Storage still unavailable: ${result.error}`, 'error');
   }, [retryStorage, showNotification]);
 
   const handleClearStorage = useCallback(() => {
     const result = clearStorage();
-    if (result.success) {
-      showNotification('Storage cleared successfully!');
-    } else {
-      showNotification(`Failed to clear storage: ${result.error}`, 'error');
-    }
+    result.success
+      ? showNotification('Storage cleared successfully!')
+      : showNotification(`Failed to clear storage: ${result.error}`, 'error');
   }, [clearStorage, showNotification]);
 
-  // Show storage error handler for critical errors
   if (isCriticalError) {
     return (
       <StorageErrorHandler
@@ -278,60 +190,42 @@ const PromptBuilder = ({ onSwitchMode }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* PWA Install Component (uncomment if you have it) */}
-      {/* <PWAInstall /> */}
-
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="bg-purple-600 dark:bg-purple-600 p-2 rounded-lg">
+              <div className="bg-purple-600 p-2 rounded-lg">
                 <Code className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 DevPrompt Generator
               </h1>
-              {/* WORKING: Switch to Custom */}
-              <button
-                onClick={() => onSwitchMode?.('custom')}
-                className="ml-3 px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
-                title="Switch to Custom Builder"
-                type="button"
-              >
-                Switch to Custom
-              </button>
-              {/* Model count badge */}
-              <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">
-                7 AI Models
-              </span>
             </div>
-            <div className="flex items-center gap-4">
-              {/* Cost savings indicator */}
-              {parseFloat(costSavings.savings) > 50 && (
-                <div className="flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-                  <TrendingDown className="w-4 h-4" />
-                  <span>Save {costSavings.savings}%</span>
-                </div>
-              )}
-              
-              {/* Storage status indicators */}
+
+            <div className="flex items-center gap-2">
+              {/* Mobile drawer */}
+              <button
+                onClick={() => setShowMobileControls((v) => !v)}
+                className="lg:hidden p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                title="Toggle Controls"
+                aria-label="Toggle Controls"
+                aria-expanded={showMobileControls}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
               {!isStorageSupported && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded text-xs">
+                <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded text-xs">
                   <span>⚠️</span>
                   <span>No Storage</span>
                 </div>
               )}
-              {storageError && !isCriticalError && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 rounded text-xs">
-                  <span>🔥</span>
-                  <span>Storage Issue</span>
-                </div>
-              )}
+
               <button
                 onClick={() => setShowHelp(true)}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                title="Help & Tips (Press ?)"
+                title="Help & Tips"
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -341,95 +235,186 @@ const PromptBuilder = ({ onSwitchMode }) => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Configuration */}
-          <div className="lg:col-span-1 space-y-6">
-            <ModelSelector 
+      {/* Slim model bar (sticky below header on mobile too) */}
+      <div className="sticky top-16 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="lg:hidden">
+            <ModelSelector
               selectedModel={selectedModel}
-              onModelChange={handleModelChange}
-              recommendedModels={recommendedModels}
+              onModelChange={setSelectedModel}
             />
-            
-            <LanguageSelector 
-              selectedLanguage={selectedLanguage}
-              onLanguageChange={setSelectedLanguage}
+          </div>
+          <div className="hidden lg:block">
+            <ModelSelector
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
             />
-            
-            <CategorySelector 
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
+          </div>
+        </div>
+      </div>
 
-            {/* Smart recommendations panel */}
-            {recommendedModels.length > 0 && !recommendedModels.includes(selectedModel) && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
-                  💡 Smart Suggestion
-                </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
-                  For {categoryObj?.name || selectedCategory} tasks, consider these models:
-                </p>
-                <div className="space-y-2">
-                  {recommendedModels.slice(0, 2).map(modelId => {
-                    const model = AI_MODELS.find(m => m.id === modelId);
-                    return model ? (
-                      <button
-                        key={modelId}
-                        onClick={() => handleModelChange(modelId)}
-                        className="w-full text-left p-2 bg-blue-100 dark:bg-blue-800/50 hover:bg-blue-200 dark:hover:bg-blue-700/50 rounded text-sm transition-colors"
-                      >
-                        <span className="mr-2">{model.icon}</span>
-                        <span className="font-medium">{model.name}</span>
-                        {model.savings && (
-                          <span className="ml-2 text-xs text-green-600 dark:text-green-400">
-                            ({model.savings})
-                          </span>
-                        )}
-                      </button>
-                    ) : null;
-                  })}
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {/* Responsive 3-column grid */}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,260px)_minmax(640px,1fr)_minmax(0,260px)] items-start">
+          {/* LEFT PANEL */}
+          <aside
+            className={`relative lg:static ${
+              showMobileControls
+                ? 'fixed inset-y-16 left-0 right-1/3 z-40 p-4 bg-white dark:bg-gray-800 shadow-lg'
+                : 'hidden'
+            } lg:block`}
+          >
+            <div className="space-y-4">
+              <CategorySelector
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+              <FeatureTagsSelector selectedTags={selectedTags} onTagToggle={toggleTag} />
+            </div>
+          </aside>
+
+          {/* CENTER */}
+          <main className="min-w-0">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col">
+              {/* Toolbar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 lg:p-5 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap items-center gap-3">
+                  <LanguageSelector
+                    selectedLanguage={selectedLanguage}
+                    onLanguageChange={setSelectedLanguage}
+                  />
+                  <DifficultySelector
+                    selectedDifficulty={selectedDifficulty}
+                    onDifficultyChange={setSelectedDifficulty}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowPrompt((v) => !v)}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title={showPrompt ? 'Hide Prompt' : 'Show Prompt'}
+                    aria-label={showPrompt ? 'Hide Prompt' : 'Show Prompt'}
+                  >
+                    {showPrompt ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+
+                  <button
+                    onClick={savePrompt}
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span className="hidden sm:inline">Save</span>
+                  </button>
+
+                  <button
+                    onClick={copyToClipboard}
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors shadow"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span className="hidden sm:inline">Copy</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Prompt body */}
+              <div className="p-4 lg:p-6 min-h-[220px]">
+                {showPrompt ? (
+                  <div
+                    className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap max-h-[60vh] overflow-y-auto"
+                    aria-live="polite"
+                  >
+                    {generatedPrompt}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Prompt hidden. Use the eye icon to show it again.
+                  </div>
+                )}
+              </div>
+
+              {/* Footer status */}
+              <div className="px-4 pb-4 lg:px-6 lg:pb-6">
+                <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                    <span>Ready</span>
+                  </div>
+                  <span>•</span>
+                  <span>{generatedPrompt.length} chars</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Saved items inline under prompt */}
+            {savedPrompts && savedPrompts.length > 0 && (
+              <div className="mt-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      Saved Prompts ({savedPrompts.length})
+                    </div>
+                    <button
+                      onClick={() => setShowHistory((v) => !v)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    >
+                      <History className="w-4 h-4" />
+                      View
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
-          </div>
+          </main>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            <DifficultySelector 
-              selectedDifficulty={selectedDifficulty}
-              onDifficultyChange={setSelectedDifficulty}
-            />
+          {/* RIGHT PANEL */}
+          <aside
+            className={`relative lg:static ${
+              showMobileControls
+                ? 'fixed inset-y-16 right-0 left-1/3 z-40 p-4 bg-white dark:bg-gray-800 shadow-lg'
+                : 'hidden'
+            } lg:block`}
+          >
+            <div className="space-y-4">
+              <TechStackSelector
+                selectedTechStack={selectedTechStack}
+                onTechStackChange={setSelectedTechStack}
+              />
+              <CustomRequirements
+                customRequirements={customRequirements}
+                onRequirementsChange={setCustomRequirements}
+              />
+            </div>
+          </aside>
+        </div>
+      </div>
 
-            <TechStackSelector 
-              selectedTechStack={selectedTechStack}
-              onTechStackChange={setSelectedTechStack}
-            />
+      {/* Mobile backdrop for drawers */}
+      {showMobileControls && (
+        <button
+          className="lg:hidden fixed inset-0 bg-black/40 z-30"
+          aria-label="Close controls overlay"
+          onClick={() => setShowMobileControls(false)}
+        />
+      )}
 
-            <FeatureTagsSelector 
-              selectedTags={selectedTags}
-              onTagToggle={toggleTag}
-            />
-
-            <CustomRequirements 
-              customRequirements={customRequirements}
-              onRequirementsChange={setCustomRequirements}
-            />
-
-            <PromptPreview 
-              showPreview={showPreview}
-              onTogglePreview={() => setShowPreview(!showPreview)}
-              generatedPrompt={generatedPrompt}
-              onCopyPrompt={copyToClipboard}
-              onSavePrompt={savePrompt}
-              selectedModel={selectedModel}
-              costSavings={costSavings}
-              aiModels={AI_MODELS}
-            />
-
-            {/* Show saved prompts only if we have any */}
-            {savedPrompts && savedPrompts.length > 0 && (
-              <SavedPrompts 
+      {/* History modal (reuses SavedPrompts) */}
+      {showHistory && savedPrompts && savedPrompts.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Saved Prompts</h3>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                aria-label="Close saved prompts"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <SavedPrompts
                 savedPrompts={savedPrompts}
                 onLoadPrompt={loadPrompt}
                 AI_MODELS={AI_MODELS}
@@ -437,61 +422,43 @@ const PromptBuilder = ({ onSwitchMode }) => {
                 CATEGORIES={CATEGORIES}
                 DIFFICULTY_LEVELS={DIFFICULTY_LEVELS}
               />
-            )}
-
-            {/* Storage warning for non-critical errors */}
-            {storageError && !isCriticalError && (
-              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-orange-600 dark:text-orange-400">⚠️</span>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-orange-800 dark:text-orange-200">
-                      Storage Issue Detected
-                    </h3>
-                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
-                      {storageError}. Your prompts are saved for this session but won't persist.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleStorageRetry}
-                    className="px-3 py-1 bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded text-sm hover:bg-orange-200 dark:hover:bg-orange-700 transition-colors"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Notification */}
+      {/* Storage warning (non-critical) */}
+      {storageError && !isCriticalError && (
+        <div className="fixed bottom-4 left-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 max-w-sm z-40">
+          <div className="flex items-center gap-3">
+            <span className="text-orange-600 dark:text-orange-400">⚠️</span>
+            <div className="flex-1">
+              <h3 className="font-medium text-orange-800 dark:text-orange-200 text-sm">Storage Issue</h3>
+              <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">Session-only mode</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
       {notification && (
         <div className="fixed bottom-4 right-4 z-50">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-fade-in ${
-            notification.type === 'error' 
-              ? 'bg-red-600 text-white' 
-              : notification.type === 'warning'
-              ? 'bg-yellow-600 text-white'
-              : 'bg-green-600 text-white'
-          }`}>
-            {notification.type === 'error' ? (
-              <X className="w-5 h-5" />
-            ) : notification.type === 'warning' ? (
-              <span className="text-sm">⚠️</span>
-            ) : (
-              <Check className="w-5 h-5" />
-            )}
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+              notification.type === 'error'
+                ? 'bg-red-600 text-white'
+                : notification.type === 'warning'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-green-600 text-white'
+            }`}
+          >
+            {notification.type === 'error' ? '✖︎' : notification.type === 'warning' ? '⚠︎' : '✓'}
             <span className="text-sm font-medium">{notification.message}</span>
           </div>
         </div>
       )}
 
-      {/* Help Modal */}
-      <HelpModal 
-        isOpen={showHelp} 
-        onClose={() => setShowHelp(false)} 
-      />
+      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 };
