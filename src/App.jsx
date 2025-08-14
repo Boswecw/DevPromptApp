@@ -22,9 +22,11 @@ import {
   ThemeProvider, 
   ThemeToggle, 
   HelpModal,
-  LoadingSpinner,
-  PWAInstall
+  LoadingSpinner
 } from './components';
+
+// PWA component (direct import)
+import PWAInstall from './components/PWAInstall';
 
 // PromptBuilder components - all integrated
 import { 
